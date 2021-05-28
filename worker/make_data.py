@@ -160,7 +160,7 @@ def dwn_status():
 
 def proxy_is_alive():
     try:
-        data = requests.get('http://icanhazip.com', proxies=proxies).text
+        data = requests.get('https://check.torproject.org/', proxies=proxies).text
         return True
     except Exception as e:
         print(e)
