@@ -175,13 +175,13 @@ function get_drp(){
 }
     $('#get_data').click(function(e){
         e.preventDefault()
-        $.ajax('{% url "tracker" %}',{
-            type: "POST",
-            data:{tracker: 'dwnld_data'},
-            success: function(r){
-                console.log(r)
-            }
-        })
+        // $.ajax('{% url "tracker" %}',{
+        //     type: "POST",
+        //     data:{tracker: 'dwnld_data'},
+        //     success: function(r){
+        //         console.log(r)
+        //     }
+        // })
         $("#download_bar").css('width', '1%')
         $("#download_text").html('Downloading....');
         var download_interval = setInterval(function(){get_drp()},1000)

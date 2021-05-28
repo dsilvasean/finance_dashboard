@@ -72,7 +72,7 @@ def dwnld_500csv():
 def get_data(period, interval):
     global downloading_data
     downloading_data = True
-    dir_name = f'{period}_{interval}'
+    dir_name = f'{static_assets}/{period}_{interval}'
     if os.path.exists(dir_name):
         shutil.rmtree(dir_name)
     os.mkdir(dir_name)
@@ -162,7 +162,8 @@ def proxy_is_alive():
     try:
         data = requests.get('http://icanhazip.com', proxies=proxies).text
         return True
-    except:
+    except Exception as e:
+        print(e)
         return False
 
 def dwnld_charts():

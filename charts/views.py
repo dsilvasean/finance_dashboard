@@ -133,7 +133,7 @@ def dwnldData(request):
         else:
             return HttpResponse('error')
     else:
-        return HttpResponse('proxy_not_set')
+        return HttpResponse('proxy_not_set__')
 
 def dwnldCharts(request):
     pieces.dwnld_500csv()
@@ -141,10 +141,10 @@ def dwnldCharts(request):
     return HttpResponse('downloaded')
 
 def tracker(request):
-    track = request.POST['tracker']
-    print(track)
-    worker_tracker.objects.get(instance='track')
-    return HttpResponse(f"tracker_init {track}")
+    track = request.GET['tracker']
+    # print(tracker)
+    data = worker_tracker.objects.get(instance=track)
+    return HttpResponse(f"tracker_init {data.running_status}")
 
 
 def updateProgress(request):

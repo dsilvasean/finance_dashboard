@@ -15,6 +15,6 @@ urlpatterns = [
     path('dwnldData', views.dwnldData, name='dwnldData'),
     path('updateCharts', views.updateCharts, name='updateCharts'),
     path('dwnldCharts', views.dwnldCharts, name="chartsUpdate"),
-    path('tracker', views.tracker, name='tracker')
+    path('tracker/', views.tracker, name='tracker')
     # path('<int:stk_id>/', views.detail, name='detail')
 ]
