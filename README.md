@@ -1,3 +1,5 @@
+# run tor:
+sudo tor 
 # finance_dashboard
 start virtual env:
 1) pipenv install
