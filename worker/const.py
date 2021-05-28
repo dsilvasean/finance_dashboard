@@ -1,1 +1,1 @@
-static_assets = "/mnt/c/final/frontend/web/static/static_assets"
+static_assets = "./static/static_assets"
