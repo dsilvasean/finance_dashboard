@@ -5,6 +5,7 @@ import yfinance as yf
 import base64
 from bs4 import BeautifulSoup
 from yfinance.utils import empty_df
+from worker.models import worker_tracker
 
 if __name__ == "__main__":
     from stock_base import Stock
@@ -43,6 +44,10 @@ def dwnld_500csv():
     global c, limit, ticker_list
     ticker_list.clear()
     isin_code.clear()
+    worker_tracker.objects.update_or_create(
+        file_or_dir_name = f"500.csv",
+        defaults={"updating" : True}
+    )
     data = requests.get('https://www1.nseindia.com/content/indices/ind_nifty500list.csv').text.strip('\n')
     data_ = ''
     splitted = data.split('\r')
@@ -66,7 +71,8 @@ def dwnld_500csv():
     # print(len(ticker_list))
     # print(ticker_list)
     # print(len(ticker_list))
-    time.sleep(5)
+    worker_tracker.objects.filter(file_or_dir_name='500.csv').update(updating=False)
+    time.sleep(2.5)
 
 # Downloading data....
 def get_data(period, interval):
@@ -76,6 +82,11 @@ def get_data(period, interval):
     if os.path.exists(dir_name):
         shutil.rmtree(dir_name)
     os.mkdir(dir_name)
+    # 
+    worker_tracker.objects.update_or_create(
+        file_or_dir_name = f"{period}_{interval}/",
+        defaults={"updating" : True}
+    )
     data = yf.download(
         tickers = ticker_list,
         period=period,
@@ -92,11 +103,17 @@ def get_data(period, interval):
     for ticker in ticker_list:
         data.loc[(ticker,),].T.to_csv(f'{static_assets}/{period}_{interval}/{ticker}.csv', sep=',', encoding='utf-8')
     downloading_data = False
+    worker_tracker.objects.filter(file_or_dir_name=f"{period}_{interval}/").update(updating=False)
     # time.sleep(1.5)
 
 def mk_info_pickel():
     global pickel_status
     emp_dict = {'zip': '0', 'sector': '0', 'fullTimeEmployees': '0', 'longBusinessSummary': '0', 'city': '0', 'phone': '0', 'country': '0', 'companyOfficers': '0', 'website': '0', 'maxAge': '0', 'address1': '0', 'fax': '0', 'industry': '0', 'address2': '0', 'previousClose': '0', 'regularMarketOpen': '0', 'twoHundredDayAverage': '0', 'trailingAnnualDividendYield': '0', 'payoutRatio': '0', 'volume24Hr': '0', 'regularMarketDayHigh': '0', 'navPrice': '0', 'averageDailyVolume10Day': '0', 'totalAssets': '0', 'regularMarketPreviousClose': '0', 'fiftyDayAverage': '0', 'trailingAnnualDividendRate': '0', 'open': '0', 'averageVolume10days': '0', 'expireDate': '0', 'yield': '0', 'algorithm': '0', 'dividendRate': '0', 'exDividendDate': '0', 'beta': '0', 'circulatingSupply': '0', 'startDate': '0', 'regularMarketDayLow': '0', 'priceHint': '0', 'currency': '0', 'trailingPE': '0', 'regularMarketVolume': '0', 'lastMarket': '0', 'maxSupply': '0', 'openInterest': '0', 'marketCap': '0', 'volumeAllCurrencies': '0', 'strikePrice': '0', 'averageVolume': '0', 'priceToSalesTrailing12Months': '0', 'dayLow': '0', 'ask': '0', 'ytdReturn': '0', 'askSize': '0', 'volume': '0', 'fiftyTwoWeekHigh': '0', 'forwardPE': '0', 'fromCurrency': '0', 'fiveYearAvgDividendYield': '0', 'fiftyTwoWeekLow': '0', 'bid': '0', 'tradeable': '0', 'dividendYield': '0', 'bidSize': '0', 'dayHigh': '0', 'exchange': '0', 'shortName': '0', 'longName': '0', 'exchangeTimezoneName': '0', 'exchangeTimezoneShortName': '0', 'isEsgPopulated': '0', 'gmtOffSetMilliseconds': '0', 'underlyingSymbol': '0', 'quoteType': '0', 'symbol': '0', 'underlyingExchangeSymbol': '0', 'headSymbol': '0', 'messageBoardId': '0', 'uuid': '0', 'market': '0', 'annualHoldingsTurnover': '0', 'enterpriseToRevenue': '0', 'beta3Year': '0', 'profitMargins': '0', 'enterpriseToEbitda': '0', '52WeekChange': '0', 'morningStarRiskRating': '0', 'forwardEps': '0', 'revenueQuarterlyGrowth': '0', 'sharesOutstanding': '0', 'fundInceptionDate': '0', 'annualReportExpenseRatio': '0', 'bookValue': '0', 'sharesShort': '0', 'sharesPercentSharesOut': '0', 'fundFamily': '0', 'lastFiscalYearEnd': '0', 'heldPercentInstitutions': '0', 'netIncomeToCommon': '0', 'trailingEps': '0', 'lastDividendValue': '0', 'SandP52WeekChange': '0', 'priceToBook': '0', 'heldPercentInsiders': '0', 'nextFiscalYearEnd': '0', 'mostRecentQuarter': '0', 'shortRatio': '0', 'sharesShortPreviousMonthDate': '0', 'floatShares': '0', 'enterpriseValue': '0', 'threeYearAverageReturn': '0', 'lastSplitDate': '0', 'lastSplitFactor': '0', 'legalType': '0', 'morningStarOverallRating': '0', 'earningsQuarterlyGrowth': '0', 'dateShortInterest': '0', 'pegRatio': '0', 'lastCapGain': '0', 'shortPercentOfFloat': '0', 'sharesShortPriorMonth': '0', 'category': '0', 'fiveYearAverageReturn': '0', 'regularMarketPrice': '0', 'logo_url': '0'}
+    # 
+    worker_tracker.objects.update_or_create(
+        file_or_dir_name = f"data.json",
+        defaults={"updating" : True}
+    )
     def exec(ticker):
         stk = yf.Ticker(ticker)
         print(ticker)
@@ -119,6 +136,7 @@ def mk_info_pickel():
     with open(f'{static_assets}/data.json', 'w') as js:
         json.dump(dict_info, js)
     print(f"{(time.time() - time_started)/ 60}")
+    worker_tracker.objects.filter(file_or_dir_name='data.json').update(updating=False)
 
 def pick_progress(out_of):
     global pickel_status
@@ -169,6 +187,11 @@ def proxy_is_alive():
 def dwnld_charts():
     global charts_got
     print('charts init')
+    # 
+    worker_tracker.objects.update_or_create(
+        file_or_dir_name = f"charts/",
+        defaults={"updating" : True}
+    )
     def make_req(ticker):
         global charts_got
         print(ticker)
@@ -194,8 +217,13 @@ def dwnld_charts():
             print(idx)
             with open(f'{static_assets}/charts/{data["ticker"]}.png', 'wb') as f:
                 f.write(base64.b64decode(data['b64d']))
+    worker_tracker.objects.filter(file_or_dir_name='charts/').update(updating=False)
 
 def calc__(d):
+    worker_tracker.objects.update_or_create(
+        file_or_dir_name = f"db_update",
+        defaults={"updating" : True}
+    )
     # get_data('1y', '1d')
     # get_data('1d', '1d')
     # mk_info_pickel()
@@ -275,6 +303,7 @@ def calc__(d):
         # print(progress(len(ticker_list)-1))
 
             # print((time.time() - time_stated))
+    worker_tracker.objects.filter(file_or_dir_name='db_update').update(updating=False)
 
 # dwnld_500csv()
 # get_data('1y', '1d')

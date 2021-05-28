@@ -85,17 +85,17 @@ def rmFromIndex(request):
 
 def updateDb(request):
     def update_charts():
-        worker_tracker.objects.update_or_create(
-            instance = "update_db",
-            defaults={'running_status': True}
-        )
+        # worker_tracker.objects.update_or_create(
+        #     instance = "update_db",
+        #     defaults={'running_status': True}
+        # )
         pieces.dwnld_500csv()
         # pieces.get_data('1y','1d')
         pieces.calc__('update')
-        worker_tracker.objects.update_or_create(
-            instance = "update_db",
-            defaults={'running_status': False}
-        )
+        # worker_tracker.objects.update_or_create(
+        #     instance = "update_db",
+        #     defaults={'running_status': False}
+        # )
         return HttpResponse('hello')
     new_thread = threading.Thread(target=update_charts, args=())
     new_thread.name = 'updateThread'
@@ -119,10 +119,10 @@ def dwnldData(request):
         )
         return HttpResponse('lol')
     if pieces.proxy_is_alive():
-        worker_tracker.objects.update_or_create(
-            instance = "dwnld_data",
-            defaults={'running_status': True}
-        )
+        # worker_tracker.objects.update_or_create(
+        #     instance = "dwnld_data",
+        #     defaults={'running_status': True}
+        # )
         new_thrwad = threading.Thread(target=dwnld_data, args =())
         new_thrwad.name = "download_thread"
         new_thrwad.setDaemon = True
@@ -173,16 +173,16 @@ def updateCharts(request):
     def charts():
         pieces.dwnld_500csv()
         pieces.dwnld_charts()
-        worker_tracker.objects.update_or_create(
-            instance = "update_charts",
-            defaults={'running_status': False}
-        )
+        # worker_tracker.objects.update_or_create(
+        #     instance = "update_charts",
+        #     defaults={'running_status': False}
+        # )
         return HttpResponse('charts updating')
     if pieces.proxy_is_alive():
-        worker_tracker.objects.update_or_create(
-            instance = "update_charts",
-            defaults={'running_status': True}
-        )
+        # worker_tracker.objects.update_or_create(
+        #     instance = "update_charts",
+        #     defaults={'running_status': True}
+        # )
         new_thread = threading.Thread(target=charts, args=())
         new_thread.setDaemon(True)
         new_thread.start()
