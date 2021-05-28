@@ -1,0 +1,1 @@
+static_assets = "/mnt/c/final/frontend/web/static/static_assets"

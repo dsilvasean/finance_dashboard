@@ -1,0 +1,36 @@
+-------path takes two arguments 
+1) route = url pattern
+2) view = view function
+
+
+
+
+
+????????????????????????
+sec_code
+    sector
+    wk52hi
+    wk52lo
+    regularOpen
+    previousClose
+    trailingEps
+    ForwardEps
+    mvg_200_clo
+    mvg_100_clo
+    mvg_50_clo
+    mvg_20_clo
+    mvg_10_clo 
+    mvg_5_clo
+    Volume
+    vol_avg_10
+    current_price
+    last_updated
+    rel_100_200
+    rel_50_100
+    rel_20_50
+    rel_10_20
+    rel_52_per
+    p_upon_e
+    market_cap
+    book_value
+    beta

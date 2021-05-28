@@ -1,0 +1,99 @@
+.highlight {
+    background-color:#ff0;
+    border:solid 0.1rem;
+}
+.hidden {
+    display: none;
+}
+#charts{
+    display: none;
+}
+
+.waitpage {
+    /* background: url(../images/blockUI.png) repeat scroll 0 0 rgba(0,0,0,0); */
+    background-color: rgba(0,0,0,0.5);
+    height: 100%;
+    left: 0;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+}
+
+.waitpage-box {
+    background: none repeat scroll center center;
+    left: 44%;
+    overflow: auto;
+    padding: 16px;
+    position: fixed;
+    text-align: center;
+    top: 46%;
+    z-index: 99999;
+}
+.custom_modal {
+    height: 100%;
+    position: fixed;
+    display: flex;
+    top: 0;
+    left: 0;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    padding:0 5em 0 5rem;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+}
+.custom_modal > div {
+    border: solid #111 0.4rem;
+    background-color: #878787;
+}
+#imagemodal > .modal-dialog{
+    /* margin-top: 1rem !important; */
+    /* margin: auto; */
+    /* width: auto; */
+    /* height: auto; */
+    /* margin: 0; */
+    /* padding: 0; */
+    /* max-width: 65% !important; */
+    /* min-width: 50% !important; */
+    position: relative;
+    display: table; 
+    overflow-y: auto;    
+    overflow-x: auto;
+    width: auto;
+    min-width: 300px;   
+}
+#imagemodal > .modal-content {
+    /* background-color: aqua; */
+    height: auto;
+    min-height: 100%;
+    border-radius: 0;
+}
+#imagemodal > .modal-dialog{
+    margin-top: 8rem;
+}
+#imagemodal > .modal-content > .modal-body > img{
+    height: 100%;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+#imagemodal > .modal-dialog > .modal-content > .modal-body {
+    background-color:#f9f9f9 !important;
+}
+#imagemodal > .modal-dialog > .modal-content > .modal-body img:hover{
+    -webkit-transform:scale(1.25); /* Safari and Chrome */
+    -moz-transform:scale(1.25); /* Firefox */
+    -ms-transform:scale(1.25); /* IE 9 */
+    -o-transform:scale(1.25); /* Opera */
+     transform:scale(1.25);
+}
+.in_navbar{
+    position: absolute;
+    top: 0;
+    right: 0
+
+}
+.no_color_coding{
+    color: #111 !important;
+}
