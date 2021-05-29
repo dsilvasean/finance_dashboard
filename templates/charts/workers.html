@@ -1,4 +1,5 @@
 {% include 'charts/nav.html' %}
+{% load charts_extra %}
 {% with last_downloaded=data.1.updated_at %}
 {% endwith %}
 <p>{{last_downloaded}}</p>
@@ -14,16 +15,14 @@
         <tbody>
            <tr>
             <td>
-                {% if data.0.running_status == 1 %}
-                <button id="get_data" class="btn btn-success">download in progress</button>
+                {% if data|get_value:"data.json"|get_value:"updating" == 1 or data|get_value:"data.json"|get_value:"updating" == 1 or data|get_value:"1d_1d/"|get_value:"updating" == 1 or data|get_value:"1y_1d/"|get_value:"updating" == 1 %}
+                <button id="get_data" disabled class="btn btn-success">download in progress</button>
                 {% else %}
                 <button id="get_data" class="btn btn-success">download data</button>
                 {% endif %}
             </td>
-            <td><span id="download_text">last_downloaded:
-                <!-- {% with last_downloaded=charts/.updated_at %} -->
-                <span style="font-weight: 700;">{% getAttr('charts/', "updated_at") %}</span>
-                <!-- {% endwith %} -->
+            <td><span id="download_text" class="bg-info rounded p-2" >last_downloaded:
+                <span style="font-weight: 700;">{{ data|get_value:"data.json"|get_value:"updated_at" }}</span>
             </span></td>
                <td style="width: 45%;" >
                 <div class="progress">
@@ -32,16 +31,14 @@
                </td>
            </tr>
            <tr>
-            <td>{% if data.1.running_status == 1 %}
-                <button id="update_data" class="btn btn-success">db update in progress</button>
+            <td>{% if data|get_value:"db_update"|get_value:"updating" == 1 %}
+                <button id="update_data" disabled class="btn btn-success">db update in progress</button>
                 {% else %}
                 <button id="update_data" class="btn btn-success">update database</button>
                 {% endif %}
             </td>
-            <td><span id="update_text">DB was last updated at::
-                {% with last_updated=data.1.started_at %}
-                <span style="font-weight: 700;">{{last_updated}}</span>
-                {% endwith %}
+            <td><span id="update_text" class="bg-info rounded" style="padding: 0.4rem;">DB was last updated at::
+                <span style="font-weight: 700;">{{data|get_value:"db_update"|get_value:"updated_at"}}</span>
             </span></td>
             <td style="width: 45%;" >
              <div class="progress">
@@ -51,17 +48,15 @@
         </tr>
         <tr>
             <td>
-                {% if data.1.running_status == 1 %}
-                <button id="update_charts" class="btn btn-success">charts update in progress</button>
+                {% if data|get_value:"charts/"|get_value:"updating" == 1 %}
+                <button id="update_charts" disabled class="btn btn-success">charts update in progress</button>
                 {% else %}
                 <button id="update_charts" class="btn btn-success">update charts</button>
                 {% endif %}
             </td>
             <td>
-                <span id="charts_text">charts were last updated at:
-                {% with last_updated_charts=data.2.started_at %}
-                <span style="font-weight: 700;">{{last_updated_charts}}</span>
-                {% endwith %}
+                <span class="bg-info rounded p-2" id="charts_text">charts were last updated at:
+                <span style="font-weight: 700;">{{data|get_value:"charts/"|get_value:"updated_at"}}</span>
             </span>
             </td>
             <td style="width: 45%;" >
@@ -72,6 +67,42 @@
         </tr>
         </tbody>
     </table>
+    <br>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File or Directory Name</th>
+                <th>Refers to</th>
+                <th>last_updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, values in data.items %}
+            <tr>
+               <td> {{key}}</td>
+               <td class="bg-info">
+                   {% with name_=values.file_or_dir_name %}
+                   {% if name_ == "500.csv" %}
+                   <span>List of 500 tickers </span>
+                   {% elif name_ == "data.json" %}
+                   <span>Information (beta, dividend etc..)</span>
+                   {% elif name_ == "charts/" %}
+                   <span>charts from chartink</span>
+                   {% elif name_ == "1d_1d/" %}
+                   <span>data for today</span>
+                   {% elif name_ == "1y_1d/" %}
+                   <span>historical data for a year</span>
+                   {% elif name_ == "db_update" %}
+                   <span>database updates</span>
+                   {% endif %}
+                   {% endwith %}
+               </td>
+               <td class="bg-info"> {{values.updated_at}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
 </div>
 <!-- <div class="container mt-3">
     <h3 style="text-align: center;">Welcome to worker</h3>

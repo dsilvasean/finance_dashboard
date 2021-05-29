@@ -12,3 +12,7 @@ def to_int(value):
 def to_float(value):
     value_ = float(value)
     return value_
+
+@register.filter()
+def get_value(value, arg):
+    return value.get(arg, None)

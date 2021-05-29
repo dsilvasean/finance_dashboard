@@ -7,6 +7,7 @@ from django.urls import reverse
 from .models import Portfolio, Stocks
 from django.forms.models import model_to_dict
 import json, threading, queue
+from django.core.serializers.json import DjangoJSONEncoder
 # from finance_front.common import pieces
 # Create your views here.
 
@@ -66,6 +67,7 @@ def addToIndex(request, pk):
         return HttpResponse('Get request was sent')
 
 def workers(request):
+    resp = {}
     context = {}
     trackers = worker_tracker.objects.all()
     for idx, tracker in enumerate(trackers):
@@ -75,8 +77,9 @@ def workers(request):
         data['updated_at'] = tracker.updated_at
         data['updating'] = tracker.updating
         context[tracker.file_or_dir_name] = data
-    # return HttpResponse(json.dumps(data), content_type="application/json")
-    return render(request, 'charts/workers.html', context)
+    resp['data'] = context
+    # return HttpResponse(json.dumps(resp, cls=DjangoJSONEncoder), content_type="application/json")
+    return render(request, 'charts/workers.html', resp)
 
 def rmFromIndex(request):
     inst = get_object_or_404(Portfolio, ticker=request.POST.get('ticker'))
@@ -88,17 +91,9 @@ def rmFromIndex(request):
 
 def updateDb(request):
     def update_charts():
-        # worker_tracker.objects.update_or_create(
-        #     instance = "update_db",
-        #     defaults={'running_status': True}
-        # )
         pieces.dwnld_500csv()
         # pieces.get_data('1y','1d')
         pieces.calc__('update')
-        # worker_tracker.objects.update_or_create(
-        #     instance = "update_db",
-        #     defaults={'running_status': False}
-        # )
         return HttpResponse('hello')
     new_thread = threading.Thread(target=update_charts, args=())
     new_thread.name = 'updateThread'
@@ -116,16 +111,8 @@ def dwnldData(request):
         pieces.get_data('1y', '1d')
         pieces.get_data('1d', '1d')
         pieces.mk_info_pickel()
-        worker_tracker.objects.update_or_create(
-            instance = "dwnld_data",
-            defaults={'running_status': False}
-        )
         return HttpResponse('lol')
     if pieces.proxy_is_alive():
-        # worker_tracker.objects.update_or_create(
-        #     instance = "dwnld_data",
-        #     defaults={'running_status': True}
-        # )
         new_thrwad = threading.Thread(target=dwnld_data, args =())
         new_thrwad.name = "download_thread"
         new_thrwad.setDaemon = True
@@ -136,7 +123,7 @@ def dwnldData(request):
         else:
             return HttpResponse('error')
     else:
-        return HttpResponse('proxy_not_set__')
+        return HttpResponse('proxy_not_set')
 
 def dwnldCharts(request):
     pieces.dwnld_500csv()
@@ -176,16 +163,8 @@ def updateCharts(request):
     def charts():
         pieces.dwnld_500csv()
         pieces.dwnld_charts()
-        # worker_tracker.objects.update_or_create(
-        #     instance = "update_charts",
-        #     defaults={'running_status': False}
-        # )
         return HttpResponse('charts updating')
     if pieces.proxy_is_alive():
-        # worker_tracker.objects.update_or_create(
-        #     instance = "update_charts",
-        #     defaults={'running_status': True}
-        # )
         new_thread = threading.Thread(target=charts, args=())
         new_thread.setDaemon(True)
         new_thread.start()
