@@ -1,5 +1,5 @@
 {% include 'charts/nav.html' %}
-{% with last_downloaded=data.1.started_at %}
+{% with last_downloaded=data.1.updated_at %}
 {% endwith %}
 <p>{{last_downloaded}}</p>
 <div class="container">
@@ -21,9 +21,9 @@
                 {% endif %}
             </td>
             <td><span id="download_text">last_downloaded:
-                {% with last_downloaded=data.0.started_at %}
-                <span style="font-weight: 700;">{{last_downloaded}}</span>
-                {% endwith %}
+                <!-- {% with last_downloaded=charts/.updated_at %} -->
+                <span style="font-weight: 700;">{% getAttr('charts/', "updated_at") %}</span>
+                <!-- {% endwith %} -->
             </span></td>
                <td style="width: 45%;" >
                 <div class="progress">

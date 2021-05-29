@@ -67,11 +67,14 @@ def addToIndex(request, pk):
 
 def workers(request):
     context = {}
-    data = {}
     trackers = worker_tracker.objects.all()
     for idx, tracker in enumerate(trackers):
-        data[idx] = tracker
-    context['data'] = data
+        data = {}
+        data['id'] = tracker.id
+        data['file_or_dir_name'] = tracker.file_or_dir_name
+        data['updated_at'] = tracker.updated_at
+        data['updating'] = tracker.updating
+        context[tracker.file_or_dir_name] = data
     # return HttpResponse(json.dumps(data), content_type="application/json")
     return render(request, 'charts/workers.html', context)
 
