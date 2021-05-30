@@ -1,5 +1,4 @@
 #python script to get data
-import enum
 import time, requests, csv, shutil, os, pickle, json, concurrent.futures, pandas
 import yfinance as yf
 import base64

@@ -41,6 +41,7 @@ webencodings = "==0.5.1"
 yfinance = "==0.1.59"
 xlrd = "*"
 openpyxl = "*"
+tqdm = "*"
 
 [dev-packages]
 

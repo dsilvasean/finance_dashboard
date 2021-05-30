@@ -1,8 +1,10 @@
 import os, sys, sqlite3
 import django
 os.environ['DJANGO_SETTINGS_MODULE'] = 'finance_front.settings'
-pro_root_dir = '/mnt/c/final/frontend/web'
-db_root_dir = '/mnt/c/final/frontend/web'
+# pro_root_dir = '/mnt/c/final/frontend/web'
+pro_root_dir = "/home/sean/repos/finance_dashboard"
+# db_root_dir = '/mnt/c/final/frontend/web'
+db_root_dir = "/home/sean/repos/finance_dashboard"
 sys.path.append(pro_root_dir)
 django.setup()
 from charts.models import Stocks, Portfolio

@@ -4,13 +4,13 @@ import pandas as pd
 import yfinance as yf
 # from worker.const import static_assets
 # from const import static_assets
-from .const import static_assets
+# from .const import static_assets
 # static_assets = "/mnt/c/final/frontend/web/static_assets"
 emp_dict = {'zip': '', 'sector': '', 'fullTimeEmployees': '', 'longBusinessSummary': '', 'city': '', 'phone': '', 'state': '', 'country': '', 'companyOfficers': '', 'website': '', 'maxAge': '', 'address1': '', 'fax': '', 'industry': '', 'previousClose': 0, 'regularMarketOpen': 0, 'twoHundredDayAverage': '', 'trailingAnnualDividendYield': '', 'payoutRatio': '', 'volume24Hr': '', 'regularMarketDayHigh': '', 'navPrice': '', 'averageDailyVolume10Day': '', 'totalAssets': '', 'regularMarketPreviousClose': '', 'fiftyDayAverage': '', 'trailingAnnualDividendRate': '', 'open': '', 'toCurrency': '', 'averageVolume10days': '', 'expireDate': '', 'yield': '', 'algorithm': '', 'dividendRate': '', 'exDividendDate': '', 'beta': 0, 'circulatingSupply': '', 'startDate': '', 'regularMarketDayLow': '', 'priceHint': '', 'currency': '', 'trailingPE': '', 'regularMarketVolume': '', 'lastMarket': '', 'maxSupply': '', 'openInterest': '', 'marketCap': 0, 'volumeAllCurrencies': '', 'strikePrice': '', 'averageVolume': '', 'priceToSalesTrailing12Months': '', 'dayLow': '', 'ask': '', 'ytdReturn': '', 'askSize': '', 'volume': '', 'fiftyTwoWeekHigh': 0, 'forwardPE': '', 'fromCurrency': '', 'fiveYearAvgDividendYield': '', 'fiftyTwoWeekLow': 0, 'bid': '', 'tradeable': '', 'dividendYield': 0, 'bidSize': '', 'dayHigh': '', 'exchange': '', 'shortName': '', 'longName': '', 'exchangeTimezoneName': '', 'exchangeTimezoneShortName': '', 'isEsgPopulated': '', 'gmtOffSetMilliseconds': '', 'quoteType': '', 'symbol': '', 'messageBoardId': '', 'market': '', 'annualHoldingsTurnover': '', 'enterpriseToRevenue': '', 'beta3Year': '', 'profitMargins': '', 'enterpriseToEbitda': '', '52WeekChange': '', 'morningStarRiskRating': '', 'forwardEps': 0, 'revenueQuarterlyGrowth': '', 'sharesOutstanding': 1, 'fundInceptionDate': '', 'annualReportExpenseRatio': '', 'bookValue': '', 'sharesShort': '', 'sharesPercentSharesOut': '', 'fundFamily': '', 'lastFiscalYearEnd': '', 'heldPercentInstitutions': '', 'netIncomeToCommon': '', 'trailingEps': 0, 'lastDividendValue': '', 'SandP52WeekChange': '', 'priceToBook': '', 'heldPercentInsiders': '', 'nextFiscalYearEnd': '', 'mostRecentQuarter': '', 'shortRatio': '', 'sharesShortPreviousMonthDate': '', 'floatShares': '', 'enterpriseValue': '', 'threeYearAverageReturn': '', 'lastSplitDate': '', 'lastSplitFactor': '', 'legalType': '', 'morningStarOverallRating': '', 'earningsQuarterlyGrowth': '', 'dateShortInterest': '', 'pegRatio': '', 'lastCapGain': '', 'shortPercentOfFloat': '', 'sharesShortPriorMonth': '', 'category': '', 'fiveYearAverageReturn': '', 'regularMarketPrice': 1, 'logo_url': ''}
-
+static_assets = "../static/static_assets/migrate_class"
 class Stock():
     def __init__(self, ticker, isin_code):
-        self.stk = yf.Ticker(ticker)
+        # self.stk = yf.Ticker(ticker)
         self.ticker = ticker
         self.isin_code = isin_code
         with open(f"{static_assets}/data.p", 'rb') as pk:
