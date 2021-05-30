@@ -1,10 +1,10 @@
 #python script to get data
 import enum
-import time, requests, csv, shutil, os, pickle, json, concurrent.futures
+import time, requests, csv, shutil, os, pickle, json, concurrent.futures, pandas
 import yfinance as yf
 import base64
 from bs4 import BeautifulSoup
-from yfinance.utils import empty_df
+# from const import static_assets
 from worker.models import worker_tracker
 
 if __name__ == "__main__":
@@ -39,6 +39,32 @@ proxies = {
 # print(time.strftime('%Y-%m-%d', time.localtime(m_time)))
 
 # def proxy_status():
+
+def init_tickers():
+    
+    file_name = '500_mk_cap'
+    url = "https://static.nseindia.com//s3fs-public/inline-files/MCAP31032021_0.xlsx"
+    headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"
+    }
+    global c, limit, ticker_list
+    ticker_list.clear()
+    ticker_list.clear()
+    worker_tracker.objects.update_or_create(
+        file_or_dir_name = f"{file_name}.xlsx",
+        defaults={"updating" : True}
+    )
+    data = requests.get(url, headers=headers).content
+    with open(f"{static_assets}/{file_name}.xlsx", 'wb') as xls:
+        xls.write(data)
+    xl = pandas.read_excel(f"{static_assets}/{file_name}.xlsx", header=None)
+    for i in range(1,501):
+        ticker_list.append(f"{xl[1][i]}.NS")
+        isin_code.append(f'ISIN{i}')
+    print(ticker_list)
+    worker_tracker.objects.filter(file_or_dir_name=f"{file_name}.xlsx").update(updating=False)
+    time.sleep(2.5)
+
 
 def dwnld_500csv():
     global c, limit, ticker_list
@@ -315,3 +341,5 @@ def calc__(d):
 # calc__('update')
 # dwnld_charts()
 # proxy_is_alive()
+
+# init_tickers()

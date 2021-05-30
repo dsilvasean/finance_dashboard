@@ -91,7 +91,7 @@ def rmFromIndex(request):
 
 def updateDb(request):
     def update_charts():
-        pieces.dwnld_500csv()
+        pieces.init_tickers()
         # pieces.get_data('1y','1d')
         pieces.calc__('update')
         return HttpResponse('hello')
@@ -107,7 +107,7 @@ def updateDb(request):
 
 def dwnldData(request):
     def dwnld_data():
-        pieces.dwnld_500csv()
+        pieces.init_tickers()
         pieces.get_data('1y', '1d')
         pieces.get_data('1d', '1d')
         pieces.mk_info_pickel()
@@ -126,7 +126,7 @@ def dwnldData(request):
         return HttpResponse('proxy_not_set')
 
 def dwnldCharts(request):
-    pieces.dwnld_500csv()
+    pieces.init_tickers()
     pieces.dwnld_charts()
     return HttpResponse('downloaded')
 
@@ -161,7 +161,7 @@ def pickel_progress(request):
 
 def updateCharts(request):
     def charts():
-        pieces.dwnld_500csv()
+        pieces.init_tickers()
         pieces.dwnld_charts()
         return HttpResponse('charts updating')
     if pieces.proxy_is_alive():

@@ -39,6 +39,8 @@ sqlparse = "==0.4.1"
 urllib3 = "==1.25.8"
 webencodings = "==0.5.1"
 yfinance = "==0.1.59"
+xlrd = "*"
+openpyxl = "*"
 
 [dev-packages]
 

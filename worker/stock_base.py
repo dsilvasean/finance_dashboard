@@ -23,8 +23,12 @@ class Stock():
             self.sector = data['sector']
         except:
             data = emp_dict
-        if data['dividendYield'] == None:
-            data['dividendYield'] = 0
+        try:
+            if data['dividendYield'] == None:
+                data['dividendYield'] = 0
+        except:
+            data = emp_dict
+            data['dividendYield'] = 0 
         if data['beta'] == None:
             data['beta'] == 0
         if data['bookValue'] == "" or data['bookValue'] == None:
