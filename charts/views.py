@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.urls import reverse
+import requests
 from .models import Portfolio, Stocks
 from django.forms.models import model_to_dict
 import json, threading, queue
@@ -15,7 +16,7 @@ from charts.forms import addToPortfolio
 # from charts.models import Portfolio
 from portfolio.models import Stock_test
 
-from worker import make_data as pieces
+from worker import new_make_data as pieces
 from worker.models import worker_tracker
 
 # def index(request):
@@ -28,6 +29,8 @@ from worker.models import worker_tracker
 #         # data_.append(stk.ticker)
 #     # return HttpResponse(stk_list[1].volume)
 #     return HttpResponse(test_data)
+
+worker_instance = None
 
 def index(request):
     context = {}
@@ -67,6 +70,8 @@ def addToIndex(request, pk):
         return HttpResponse('Get request was sent')
 
 def workers(request):
+    global worker_instance
+    worker_instance = pieces.workers_()
     resp = {}
     context = {}
     trackers = worker_tracker.objects.all()
@@ -91,9 +96,10 @@ def rmFromIndex(request):
 
 def updateDb(request):
     def update_charts():
-        pieces.init_tickers()
+        worker_instance.calc__('update')
+        # pieces.init_tickers()
         # pieces.get_data('1y','1d')
-        pieces.calc__('update')
+        # pieces.calc__('update')
         return HttpResponse('hello')
     new_thread = threading.Thread(target=update_charts, args=())
     new_thread.name = 'updateThread'
@@ -126,8 +132,7 @@ def dwnldData(request):
         return HttpResponse('proxy_not_set')
 
 def dwnldCharts(request):
-    pieces.init_tickers()
-    pieces.dwnld_charts()
+    worker_instance.dwnld_charts()
     return HttpResponse('downloaded')
 
 def tracker(request):
@@ -144,7 +149,8 @@ def updateProgress(request):
     for i in range(0, len(threads)):
         if threads[i].name == 'updateThread':
             if threads[i].is_alive:
-                p = pieces.progress(len(pieces.ticker_list)-1)
+                # p = pieces.progress(len(pieces.ticker_list)-1)
+                p = worker_instance.progress_(worker_instance.rows_updated)
                 response_data['progress'] = p
                 return HttpResponse(json.dumps(response_data), content_type="application/json")
             break
@@ -161,10 +167,9 @@ def pickel_progress(request):
 
 def updateCharts(request):
     def charts():
-        pieces.init_tickers()
-        pieces.dwnld_charts()
+        worker_instance.dwnld_charts()
         return HttpResponse('charts updating')
-    if pieces.proxy_is_alive():
+    if worker_instance.preoxy_is_alive():
         new_thread = threading.Thread(target=charts, args=())
         new_thread.setDaemon(True)
         new_thread.start()
@@ -172,3 +177,18 @@ def updateCharts(request):
         return HttpResponse('charts updating')
     else:
         return HttpResponse('proxy_not_set')
+
+
+# API CALLS
+def progress(request):
+    if worker_instance == None:
+        data = {
+            'message':"workers class has not yet been initialized go to /charts/worker"
+        }
+    else :
+        data = {
+        "pickel_status":round(worker_instance.progress_(worker_instance.pickel_status),2),
+        "charts_updated": round(worker_instance.progress_(worker_instance.charts_downloaded), 2),
+        "rows_updated": round(worker_instance.progress_(worker_instance.rows_updated), 2)
+        }
+    return HttpResponse(json.dumps(data), content_type="application/json")

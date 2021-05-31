@@ -2,17 +2,19 @@ import requests, pandas, os, shutil, pickle, json, time, threading, base64
 import yfinance as yf
 import concurrent.futures
 from bs4 import BeautifulSoup
-from stock_base import Stock
-import db_tools as dbtools
+from worker.stock_base import Stock
+import worker.db_tools as dbtools
 
 file_name = "500_mk_cap_class"
-static_assets = "../static/static_assets/migrate_class"
+# static_assets = "../static/static_assets/migrate_class"
+static_assets = "/home/sean/Desktop/repos/finance_dashboard/static/static_assets/migrate_class"
 
 class workers_():
     def __init__(self):
         self.time_started = time.time()
         self.pickel_status = 0
         self.charts_downloaded = 0
+        self.rows_updated =0
         self.proxies = proxies = {
   'socks5': 'socks5://127.0.0.1:9050',
   'http': 'socks5://127.0.0.1:9050',
@@ -33,8 +35,20 @@ class workers_():
             self.isin_code.append(f'ISIN{i}')
         
     def progress_(self, done):
-        return (f"{done} out of {len(self.tickers_list)}")
-        
+        try:
+            per = (done/len(self.tickers_list))*100
+            return per
+        except:
+            return 'update_not_yet_started'
+        # return (f"{done} out of {len(self.tickers_list)}")
+    
+    def preoxy_is_alive(self):
+        try:
+            re = requests.get('https://www.google.com', proxies=self.proxies)
+            return True
+        except:
+            return False
+            
     def get_data(self, period, interval):
         dir_name = f'{static_assets}/{period}_{interval}'
         if os.path.exists(dir_name):
@@ -169,6 +183,7 @@ class workers_():
             print(stk.__dict__)
             if d =='update':
                 dbtools.update_stocks(stk.__dict__)
+                self.rows_updated = self.rows_updated + 1
                 # ++update_count
             else:
                 dbtools.add_to_db(stk.__dict__)
@@ -178,7 +193,7 @@ class workers_():
             # update_count = i
         # print(progress(len(ticker_list)-1))
 
-worker1 =workers_()
+# worker1 =workers_()
 # worker1.dwnld_charts()
-worker1.calc__("update")
+# worker1.calc__("update")
         
