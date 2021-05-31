@@ -4,13 +4,20 @@ import concurrent.futures
 from bs4 import BeautifulSoup
 from worker.stock_base import Stock
 import worker.db_tools as dbtools
+from worker.models import worker_tracker
+from worker.const import static_assets
 
 file_name = "500_mk_cap_class"
-# static_assets = "../static/static_assets/migrate_class"
-static_assets = "/home/sean/Desktop/repos/finance_dashboard/static/static_assets/migrate_class"
+# # static_assets = "../static/static_assets/migrate_class"
+# # static_assets = "/home/sean/Desktop/repos/finance_dashboard/static/static_assets/migrate_class"
+# static_assets = "/mnt/c/repos/finance_dashboard/static/static_assets/migrate_class"
 
 class workers_():
     def __init__(self):
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name="500_mk_cap.xlsx",
+            defaults={"updating": True}
+        )
         self.time_started = time.time()
         self.pickel_status = 0
         self.charts_downloaded = 0
@@ -33,6 +40,10 @@ class workers_():
         for i in range(1,501):
             self.tickers_list.append(f"{xl[1][i]}.NS")
             self.isin_code.append(f'ISIN{i}')
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name="500_mk_cap.xlsx",
+            defaults={"updating": False}
+        )
         
     def progress_(self, done):
         try:
@@ -42,7 +53,7 @@ class workers_():
             return 'update_not_yet_started'
         # return (f"{done} out of {len(self.tickers_list)}")
     
-    def preoxy_is_alive(self):
+    def proxy_is_alive(self):
         try:
             re = requests.get('https://www.google.com', proxies=self.proxies)
             return True
@@ -51,6 +62,10 @@ class workers_():
             
     def get_data(self, period, interval):
         dir_name = f'{static_assets}/{period}_{interval}'
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name=f"{period}_{interval}/",
+            defaults={"updating": True}
+        )
         if os.path.exists(dir_name):
             shutil.rmtree(dir_name)
         os.mkdir(dir_name)
@@ -62,14 +77,22 @@ class workers_():
         auto_adjust=False, 
         prepost=False,
         threads= 4, 
-        # proxy='socks5://127.0.0.1:9050',
-        proxy=None
+        proxy='socks5://127.0.0.1:9050',
+        # proxy=None
     )
         data =data.T
         for ticker in self.tickers_list:
             data.loc[(ticker,),].T.to_csv(f'{static_assets}/{period}_{interval}/{ticker}.csv', sep=',', encoding='utf-8')
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name=f"{period}_{interval}/",
+            defaults={"updating": False}
+        )
 
     def mk_info_pickel(self):
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name=f"data.json",
+            defaults={"updating": True}
+        )
         def exec(ticker):
             stk = yf.Ticker(ticker)
             print(ticker)
@@ -91,9 +114,17 @@ class workers_():
             pickle.dump(self.dict_info, fp, protocol=pickle.HIGHEST_PROTOCOL)
         with open(f'{static_assets}/data.json', 'w') as js:
             json.dump(self.dict_info, js)
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name=f"data.json",
+            defaults={"updating": False}
+        )
         print(f"{(time.time() - self.time_started)/ 60}")
     
     def dwnld_charts(self):
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name=f"charts/",
+            defaults={"updating": True}
+        )
         def make_req(ticker):
             print(ticker)
             ticker =ticker[:-3]
@@ -116,9 +147,16 @@ class workers_():
                 self.charts_downloaded = self.charts_downloaded + 1
                 with open(f'{static_assets}/charts/{data["ticker"]}.png', 'wb') as f:
                     f.write(base64.b64decode(data['b64d']))
-    
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name=f"charts/",
+            defaults={"updating": False}
+        )
     # 
     def calc__(self,d): 
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name=f"db_update",
+            defaults={"updating": True}
+        )
         for i in range(0, len(self.tickers_list)):
             # if (i%40 ==0 or i%80 == 0 or i % 100 ==0 or i%150==0 or i % 200 ==0 or i % 250 ==0 or i%300 ==0 or i%350 ==0 or i%400 ==0 or i%450 ==0 or i%500 ==0):
             #     time.sleep(1)
@@ -189,11 +227,8 @@ class workers_():
                 dbtools.add_to_db(stk.__dict__)
             print(f'{len(self.tickers_list)- 1}')
             print(self.tickers_list)
-        # print(f'update_count: {i}')
-            # update_count = i
-        # print(progress(len(ticker_list)-1))
-
-# worker1 =workers_()
-# worker1.dwnld_charts()
-# worker1.calc__("update")
+        worker_tracker.objects.update_or_create(
+            file_or_dir_name=f"db_update",
+            defaults={"updating": False}
+        )
         

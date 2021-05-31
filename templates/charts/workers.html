@@ -82,7 +82,7 @@
                <td> {{key}}</td>
                <td class="bg-info">
                    {% with name_=values.file_or_dir_name %}
-                   {% if name_ == "500.csv" %}
+                   {% if name_ == "500_mk_cap.xlsx" %}
                    <span>List of 500 tickers </span>
                    {% elif name_ == "data.json" %}
                    <span>Information (beta, dividend etc..)</span>
@@ -168,10 +168,10 @@
                 
            });
 function get_pr(){
-    $.ajax("{% url 'updateProgress' %}",{
+    $.ajax("{% url 'progress' %}",{
         type: 'GET',
         success:function(r){
-            resp_ = r['progress']
+            resp_ = r['rows_updated']
             $('#update_bar').css('width', `${resp_}%`)
             console.log(resp_)
         }
@@ -182,8 +182,8 @@ function get_cpb(){
         type: "GET",
         success:function(r){
             console.log(r)
-            $('#charts_text').html(r['charts_progress'])
-            $('#charts_bar').css('width', `${r["charts_progress"]}%`)
+            $('#charts_text').html(r['charts_updated'])
+            $('#charts_bar').css('width', `${r["charts_updated"]}%`)
         }
     })
 }
@@ -198,7 +198,7 @@ function get_drp(){
                 $("#download_text").html("downloading info_dict")
             }
             // $("#download_text").html(`Downloading historical data: ${r["downloading_data"]}`)
-            pk_status = r['mk_pickel_status']
+            pk_status = r['pickel_status']
             $('#download_bar').css('width', `${pk_status}%`)
             console.log(r)
         }
