@@ -1,12 +1,13 @@
 from django.http import response
 from django.http.response import Http404
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 import requests
 
-import worker
 from .models import Portfolio, Stocks
 from django.forms.models import model_to_dict
 import json, threading, queue
@@ -16,13 +17,41 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from charts.forms import addToPortfolio
 # from charts.models import Portfolio
-from portfolio.models import Stock_test
 
-from worker import new_make_data as pieces
-from worker.models import worker_tracker
+from charts.models import Update_trackers
+from utils import fetch_data 
 
 worker_instance = None
 
+def login_(request):
+    global worker_instance
+    if request.method =='GET':
+        return render(request, "registration/login.html")
+    username = request.POST['username']
+    print(username)
+    password = request.POST['password']
+    user  = authenticate(username=username, password=password)
+    print(user)
+    if user is not None:
+        login(request, user)
+        request.session['username'] = user.get_username()
+        worker_instance = fetch_data.workers_()
+        if request.POST['next'] == '' or None:
+            print('lolll')
+            return HttpResponseRedirect('/charts')
+        else:
+            return HttpResponseRedirect(request.POST['next'])
+    else:
+        return HttpResponse('asas')
+
+def logout_(request):
+    logout(request)
+    return HttpResponseRedirect('login')
+
+def loginForm(request):
+    return render(request, "registration/login.html") 
+
+@login_required(login_url='login_')
 def index(request):
     context = {}
     data = {}
@@ -32,18 +61,19 @@ def index(request):
     for idx, stk in enumerate(stk_list):
         data[idx] = stk
     context['data'] = data
+    print(request.session['username'])
     return render(request, "charts/charts.html", context)
-    # return HttpResponse(f'Youre lookaing at question {stk_id}')
 
 def test(request):
-    return Http404()
+    return HttpResponse(request.session['id'])
 
+@login_required(login_url='login_')
 def workers(request):
     # global worker_instance
     # worker_instance = pieces.workers_()
     resp = {}
     context = {}
-    trackers = worker_tracker.objects.all()
+    trackers = Update_trackers.objects.all()
     for idx, tracker in enumerate(trackers):
         data = {}
         data['id'] = tracker.id
@@ -52,18 +82,18 @@ def workers(request):
         data['updating'] = tracker.updating
         context[tracker.file_or_dir_name] = data
     resp['data'] = context
-    # return HttpResponse(json.dumps(resp, cls=DjangoJSONEncoder), content_type="application/json")
     return render(request, 'charts/workers.html', resp)
 
-def tracker(request):
-    track = request.GET['tracker']
-    # print(tracker)
-    data = worker_tracker.objects.get(instance=track)
-    return HttpResponse(f"tracker_init {data.running_status}")
-
-
 #//////////////////////////////////////////// API CALLS ////////////////////////////////////////////////////////////////////////////////////////////
+# API V1
 # Add stock to portfolio
+# Remove stock from portfolio
+# Download hitorical data and information from yfinance
+# Update database 
+# Update charts from chartink
+# Progress check
+# ////////////////////////////// API V2 CALLS////////////////////////////////////////////////////////////////////
+@login_required
 def addToIndex(request, pk):
     charts_instance = get_object_or_404(Stocks, ticker=pk)
     # portfolio_instance= get_object_or_404(Portfolio, ticker=pk)
@@ -86,7 +116,7 @@ def addToIndex(request, pk):
     else:
         return HttpResponse('Get request was sent')
 
-# Remove stock from portfolio
+@login_required
 def rmFromIndex(request):
     inst = get_object_or_404(Portfolio, ticker=request.POST.get('ticker'))
     inst.delete()
@@ -95,79 +125,91 @@ def rmFromIndex(request):
     # return HttpResponseRedirect(reverse('index'))
     return HttpResponse(json.dumps(response), content_type='application/json')
 
-# Download hitorical data and information from yfinance
-def dwnldData(request):
+@login_required
+def updateHistoricalData(request):
     global worker_instance
-    worker_instance = pieces.workers_()
-    def dwnld_data():
-        worker_instance.get_data('1y', '1d')
-        worker_instance.get_data('1d', '1d')
-        worker_instance.mk_info_pickel()
-        return HttpResponse('lol')
-    if worker_instance.proxy_is_alive():
-        new_thrwad = threading.Thread(target=dwnld_data, args =())
-        new_thrwad.name = "download_thread"
-        new_thrwad.setDaemon = True
-        new_thrwad.start()
-        new_thrwad.join()
-        if new_thrwad.is_alive:
-            return HttpResponse('downloading...')
-        else:
-            return HttpResponse('error')
-    else:
-        return HttpResponse('proxy_not_set')
-
-# Update database 
-def updateDb(request):
-    global worker_instance
-    def update_charts():
-        worker_instance.calc__('update')
-        # pieces.init_tickers()
-        # pieces.get_data('1y','1d')
-        # pieces.calc__('update')
-        return HttpResponse('hello')
-    if worker_instance ==None:
-        worker_instance = pieces.workers_()
-    new_thread = threading.Thread(target=update_charts, args=())
-    new_thread.name = 'updateThread'
-    new_thread.setDaemon(True)
-    new_thread.start()
-    new_thread.join()
-    if new_thread.is_alive:
-        return HttpResponse('updating....')
-    else:
-        return HttpResponse('error')
-
-# Update charts from chartink
-
-def updateCharts(request):
-    global worker_instance
-    def charts():
-        worker_instance.dwnld_charts()
-        return HttpResponse('charts updating')
-    if worker_instance == None:
-        worker_instance = pieces.workers_()
-    if worker_instance.proxy_is_alive():
-        new_thread = threading.Thread(target=charts, args=())
-        new_thread.setDaemon(True)
-        new_thread.start()
-        new_thread.join()
-        return HttpResponse('charts updating')
-    else:
-        return HttpResponse('proxy_not_set')
-
-# Progress check
-def progress(request):
-    if worker_instance == None:
-        data = {
-            'message':"workers class has not yet been initialized go to /charts/worker"
+    try:
+        worker_instance = fetch_data.workers_()
+        _resp_ = worker_instance.update_max_data()
+        resp_ = {
+            'message':_resp_
         }
-    else :
-        data = {
-        "message":"test_msg",
-        "downloading_data":True,
-        "pickel_status":round(worker_instance.progress_(worker_instance.pickel_status),2),
-        "charts_updated": round(worker_instance.progress_(worker_instance.charts_downloaded), 2),
-        "rows_updated": round(worker_instance.progress_(worker_instance.rows_updated), 2)
+        return HttpResponse(json.dumps(resp_, content_type="application/json"))
+    except Exception as e:
+        resp_ = {
+            'message':_resp_
         }
-    return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(resp_), content_type="application/json")
+@login_required
+def statsUpdate(request):
+    global worker_instance
+    resp_ = {'message':1}
+    try:
+        inst = worker_instance
+        _resp_ = inst.yquery()
+        resp_['message'] = _resp_
+    except Exception as e:
+        # resp_['message'] = e
+        print(e)
+    return HttpResponse(json.dumps(resp_), content_type="application/json")
+
+@login_required
+def updateRowsInDb(request):
+    global worker_instance
+    try:
+        inst = worker_instance
+        _resp_ = inst.update_rows('update')
+        resp_ = {
+            'message':_resp_
+        }
+        return HttpResponse(json.dumps(resp_), content_type="application/json")
+    except Exception as e:
+        resp_ = {
+            'message':e
+        }
+        return HttpResponse(json.dumps(resp_), content_type="application/json")
+
+@login_required
+def updateCharts_(request):
+    global worker_instance
+    try:
+        inst = worker_instance
+        _resp_ = inst.dwnld_charts()
+        resp_ = {
+            'message':_resp_
+        }
+        return HttpResponse(json.dumps(resp_), content_type="application/json")
+    except Exception as e:
+        resp_ = {
+            'message': e
+        }
+        return HttpResponse(json.dumps(resp_), content_type='application/json')
+@login_required(login_url='login_')
+def progress_(request):
+    global worker_instance
+    resp = worker_instance.progress_debug()
+    data_ = {
+        'username': request.session['username'],
+        'data':{
+            'message': "hello world",
+            'debug':resp
+        }
+    }
+    return HttpResponse(json.dumps(data_), content_type='application/json')
+
+def bhavCopy(request):
+    inst = fetch_data.workers_()
+    ret = inst.update_max_data()
+    return HttpResponse(ret)
+
+def debugUpdate(request):
+    inst = fetch_data.workers_()
+    # inst.update_max_data()
+    inst.yquery()
+    # return HttpResponse("helllo debug")
+
+@login_required
+def yquery(request):
+    global worker_instance
+    # inst.dwnld_charts()
+    worker_instance.update_rows('update')

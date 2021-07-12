@@ -6,10 +6,10 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.db.models.base import Model
 from django.db.models.deletion import CASCADE
 from django.utils import timezone
 import os, sys
-import portfolio.models
 # from common.myScript2 import own_
 # common_root = '/mnt/c/final/frontend/web/common/'
 # sys.path.append(common_root)
@@ -93,6 +93,14 @@ class Stocks(models.Model):
         managed = True
         db_table = 'stocks'
 
+class Update_trackers(models.Model):
+    id = models.IntegerField(primary_key=True)
+    file_or_dir_name = models.CharField(max_length=240)
+    updated_at = models.DateTimeField()
+    updating = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.file_or_dir_name)
 
 class Portfolio(models.Model):
     # tickers_choice = []

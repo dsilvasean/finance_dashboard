@@ -1,148 +1,61 @@
 {% include 'charts/nav.html' %}
-{% load charts_extra %}
-{% with last_downloaded=data.1.updated_at %}
-{% endwith %}
-<p>{{last_downloaded}}</p>
 <div class="container">
+    <h3>
+        {{ request.session.username }}
+    </h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Action</th>
-                <th>status</th>
-                <th>Progress..</th>
+                <th>#</th>
+                <th>Meta</th>
+                <th>Progress</th>
             </tr>
         </thead>
         <tbody>
-           <tr>
-            <td>
-                {% if data|get_value:"data.json"|get_value:"updating" == 1 or data|get_value:"data.json"|get_value:"updating" == 1 or data|get_value:"1d_1d/"|get_value:"updating" == 1 or data|get_value:"1y_1d/"|get_value:"updating" == 1 %}
-                <button id="get_data" disabled class="btn btn-success">download in progress</button>
-                {% else %}
-                <button id="get_data" class="btn btn-success">download data</button>
-                {% endif %}
-            </td>
-            <td><span id="download_text" class="bg-info rounded p-2" >last_downloaded:
-                <span style="font-weight: 700;">{{ data|get_value:"data.json"|get_value:"updated_at" }}</span>
-            </span></td>
-               <td style="width: 45%;" >
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" id='download_bar' role="progressbar" style="width:0%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
-               </td>
-           </tr>
-           <tr>
-            <td>{% if data|get_value:"db_update"|get_value:"updating" == 1 %}
-                <button id="update_data" disabled class="btn btn-success">db update in progress</button>
-                {% else %}
-                <button id="update_data" class="btn btn-success">update database</button>
-                {% endif %}
-            </td>
-            <td><span id="update_text" class="bg-info rounded" style="padding: 0.4rem;">DB was last updated at::
-                <span style="font-weight: 700;">{{data|get_value:"db_update"|get_value:"updated_at"}}</span>
-            </span></td>
-            <td style="width: 45%;" >
-             <div class="progress">
-                 <div class="progress-bar progress-bar-striped progress-bar-animated" id='update_bar' role="progressbar" style="width:0%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-               </div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                {% if data|get_value:"charts/"|get_value:"updating" == 1 %}
-                <button id="update_charts" disabled class="btn btn-success">charts update in progress</button>
-                {% else %}
-                <button id="update_charts" class="btn btn-success">update charts</button>
-                {% endif %}
-            </td>
-            <td>
-                <span class="bg-info rounded p-2" id="charts_text">charts were last updated at:
-                <span style="font-weight: 700;">{{data|get_value:"charts/"|get_value:"updated_at"}}</span>
-            </span>
-            </td>
-            <td style="width: 45%;" >
-             <div class="progress">
-                 <div class="progress-bar progress-bar-striped progress-bar-animated" id='charts_bar' role="progressbar" style="width:0%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-               </div>
-            </td>
-        </tr>
+            <tr>
+                <td><a id='historicalUpdate' href="#" class="btn btn-primary">Update Historical Data</a></td>
+                <td><span id="hist_meta"></span></td>
+                <td style="width: 45%;">
+                    <div class="spinner-border" style="display: none;" id='hist_progress' role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                </td>
+            </tr>
+            <tr>
+                <td><a id='statsUpdate' href="#" class="btn btn-primary">Update statistical data from yquery</a></td>
+                <td><span id="stat_meta"></span></td>
+                <td style="width: 45%;">
+                    <div class="spinner-border" style="display: none;" id='stat_progress' role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                </td>
+            </tr>
+            <tr>
+                <td><a id='rowsUpdate' href="#" class="btn btn-primary">Update rows (database)</a></td>
+                <td><span id="rows_meta"></span></td>
+                <td style="width: 45%;">
+                    <div class="spinner-border" style="display: none;" id='rows_progress' role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                </td>
+            </tr>
+            <tr>
+                <td><a id='chartsUpdate' href="#" class="btn btn-primary">Update charts</a></td>
+                <td><span id="charts_meta"></span></td>
+                <td style="width: 45%;">
+                    <div class="spinner-border" style="display: none;" id='charts_progress' role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                </td>
+            </tr>
         </tbody>
     </table>
-    <br>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>File or Directory Name</th>
-                <th>Refers to</th>
-                <th>last_updated_at</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for key, values in data.items %}
-            <tr>
-               <td> {{key}}</td>
-               <td class="bg-info">
-                   {% with name_=values.file_or_dir_name %}
-                   {% if name_ == "500_mk_cap.xlsx" %}
-                   <span>List of 500 tickers </span>
-                   {% elif name_ == "data.json" %}
-                   <span>Information (beta, dividend etc..)</span>
-                   {% elif name_ == "charts/" %}
-                   <span>charts from chartink</span>
-                   {% elif name_ == "1d_1d/" %}
-                   <span>data for today</span>
-                   {% elif name_ == "1y_1d/" %}
-                   <span>historical data for a year</span>
-                   {% elif name_ == "db_update" %}
-                   <span>database updates</span>
-                   {% endif %}
-                   {% endwith %}
-               </td>
-               <td class="bg-info"> {{values.updated_at}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <br>
 </div>
-<!-- <div class="container mt-3">
-    <h3 style="text-align: center;">Welcome to worker</h3>
-    <br>
-   <div>
-       <form action="" id='get_data' method="POST" name="get_data">
-        <input type="submit" value="get data" class="btn btn-success">
-        <span class="font-weight-bold" style="font-size: 1.5rem;"> Download historical, info_dict and save to disk 'static_assets':</span>
-        <p id='download_text'></p>
-        <p id="hist_text"></p>
-        <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" id='download_bar' role="progressbar" style="width:0%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-          </div>
-    </form>
-   </div>
-   <br>
-   <div>
-    <form action="" id='update_data' method="POST" name="update_data">
-        <input type="submit" value="Update data" class="btn btn-success">
-        <br>
-        <br>
-        <p id='progress_text'></p>
-        <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" id='update_bar' role="progressbar" style="width:0%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-          </div>
-    </form>
-    </div>
-    <br>
-    <hr>
-    <form action="" id='download_charts' method="POST" name="download_charts">
-        <input type="submit" value="Download charts" class="btn btn-success">
-    </form>
-</div> -->
 {% include 'charts/footer.html' %}
 <script>
-    var resp_ ;
     $(document).ready(function(){
-        $('#update_spinner').hide()
-    })
-    $.ajaxSetup({ 
+        // SET CSRF TOKEN
+        $.ajaxSetup({ 
                 beforeSend: function(xhr, settings) {
                     function getCookie(name) {
                         var cookieValue = null;
@@ -167,122 +80,95 @@
                 } 
                 
            });
-function get_pr(){
-    $.ajax("{% url 'progress' %}",{
-        type: 'GET',
-        success:function(r){
-            resp_ = r['rows_updated']
-            $('#update_bar').css('width', `${resp_}%`)
-            console.log(resp_)
-        }
-    })
-}
-function get_cpb(){
-    $.ajax("{% url 'progress' %}", {
-        type: "GET",
-        success:function(r){
-            console.log(r)
-            $('#charts_text').html(r['charts_updated'])
-            $('#charts_bar').css('width', `${r["charts_updated"]}%`)
-        }
-    })
-}
-function get_drp(){
-    $.ajax("{% url 'progress' %}",{
-        type: 'GET',
-        success:function(r){
-            if (r['downloading_data'] == true){
-                $("#download_text").html("Downloading historical data.....")
-            }
-            else {
-                $("#download_text").html("downloading info_dict")
-            }
-            // $("#download_text").html(`Downloading historical data: ${r["downloading_data"]}`)
-            pk_status = r['pickel_status']
-            $('#download_bar').css('width', `${pk_status}%`)
-            console.log(r)
-        }
-    })
-}
-    $('#get_data').click(function(e){
-        e.preventDefault()
-        // $.ajax('{% url "tracker" %}',{
-        //     type: "POST",
-        //     data:{tracker: 'dwnld_data'},
-        //     success: function(r){
-        //         console.log(r)
-        //     }
-        // })
-        $("#download_bar").css('width', '1%')
-        $("#download_text").html('Downloading....');
-        var download_interval = setInterval(function(){get_drp()},1000)
-        $.ajax("{% url 'dwnldData' %}", {
-            type:'POST',
-            success:function(r){
-                if (r == 'proxy_not_set'){
-                    console.log('tor is not running')
-                    clearInterval(download_interval)
-                    $("#download_bar").css('width','0%')
-                    $('#download_bar').removeClass('progress-bar-animated')
-                    $('#download_text').html('Tor is not running')
-                }
-                else{
-                clearInterval(download_interval)
-                $("#download_bar").css('width','100%')
-                $('#download_bar').removeClass('progress-bar-animated')
-                $('#download_text').html('downloaded')
-                }
+        //    API CALLS 
+           function updateDom(type_){
+               $.ajax("{% url 'prog' %}", {
+                   type:'GET',
+                   success:function(r){
+                       if (type_ == 'hist_prog'){
+                           console.log('hist_prog')
+                           $("#hist_meta").html(`updating for ${(r['data']['debug']['historical']['historical_now_updating'])}`)
+                       }
+                       else if (type_ =='stats_update'){
+                           console.log('stats_update')
 
+                       }
+                       else if (type_ == 'rowsUpdate'){
+                           console.log('rows_update')
+                       }
+                       else if(type_ == 'charts') {
+                           console.log('charts_update')
+                       }
+                       else {
+                           console.log('error at updateDom')
+                       }
+                      
+                   },
+                   error:function(r){
+                       console.log(r)
+                   }
+               })
+           }
+        //    Update Historical data
+       $("#historicalUpdate").click(function(e){
+           e.preventDefault()
+           var hist_progress = $('#hist_progress').show()
+           var prog_interval = setInterval(function(){updateDom('hist_prog')},1000)
+           console.log('hello')
+            $.ajax("{% url 'historicalUpdate' %}", {
+            type:'GET',
+            success:function(r){
+                clearInterval(prog_interval)
+                var hist_progress = $('#hist_progress').hide()
+                $("#hist_meta").html(`success ${r.message}`)
+            },
+            error:function(){
+                console.log('err')
             }
         })
-
+       })
+       $("#statsUpdate").click(function(e){
+           e.preventDefault()
+           var stat_progress = $('#stat_progress').show()
+           var stat_interval = setInterval(function(){updateDom('stats_prog')},1000)
+           $.ajax("{% url 'statsUpdate' %}", {
+               type:'GET',
+               success:function(r){
+                clearInterval(stat_interval)
+                var stat_progress = $('#stat_progress').hide()
+                $("#stat_meta").html(`success ${r.message}`)
+               },
+               error: function(){
+               console.log('error....')
+               }
+           })
+       })
+       $("#rowsUpdate").click(function(e){
+           e.preventDefault()
+           $("#rows_progress").show()
+           var rows_interval = setInterval(function(){updateDom('rows_prog')}, 1000)
+           $.ajax("{% url 'updateDbRows' %}",{
+               type:'GET',
+               success: function(r){
+               clearInterval(rows_interval)
+               $("#rows_progress").hide()
+               $('#rows_meta').html(`success ${r.message}`)
+               }
+           })
+       })
+       $('#chartsUpdate').click(function(e){
+           e.preventDefault()
+           $('#charts_progress').show()
+           var charts_interval = setInterval(function(){updateDom('charts_prog')}, 1000)
+           $.ajax("{% url 'updateCharts' %}", {
+               type:'GET',
+               success:function(r){
+                   console.log(r)
+                clearInterval(charts_interval)
+                $('#charts_progress').hide()
+                $('#charts_meta').html(r.message)
+               }
+           })
+       })
     })
-   $('#update_data').click(function(e){
-       e.preventDefault()
-       $('#update_bar').css('width','2%')
-       $('#update_text').html('updating...')
-       var progress_interval = setInterval(function(){get_pr()}, 1000)
-    //    $('#update_bar')
-       $.ajax('{% url "updateDb" %}', {
-           type:'POST',
-           data:{test: 'test'},
-           success:function(){
-               console.log('success')
-               clearInterval(progress_interval)
-               $('#update_bar').css('width','100%')
-               $('#update_bar').removeClass('progress-bar-animated')
-               $('#update_text').html('updated')
-           },
-           error: function(){
-               console.log('error')
-           }
-       })
-       console.log('update')
-   })
-   $('#update_charts').click(function(e){
-       e.preventDefault()
-       var charts_interval = setInterval(function(){get_cpb()},1000)
-       $.ajax('{% url "updateCharts" %}', {
-           type:'POST',
-           success:function(r){
-               if (r == 'proxy_not_set'){
-               console.log('tor is not running')
-               clearInterval(charts_interval)
-               $('#charts_bar').css('width','0%')
-               $('#charts_bar').removeClass('progress-bar-animated')
-               $('#charts_text').html('tor is not running')
-               }
-               else{
-               console.log('charts_updated')
-               clearInterval(charts_interval)
-               $('#charts_bar').css('width','100%')
-               $('#charts_bar').removeClass('progress-bar-animated')
-               $('#charts_text').html('updated')
-               }
-           }
-       })
-   })
-
 </script>
-</body>
-</html>

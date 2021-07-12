@@ -2,6 +2,7 @@ from django.contrib import admin
 from charts.models import Stocks
 from charts.models import Portfolio
 from charts.models import InfoDict 
+from charts.models import Update_trackers
 from django.db import models
 from django.forms import TextInput, Textarea
 
@@ -17,4 +18,5 @@ class StcoskAdmin(admin.ModelAdmin):
 admin.site.register(Portfolio)
 admin.site.register(Stocks, StcoskAdmin)
 admin.site.register(InfoDict)
+admin.site.register(Update_trackers)
 

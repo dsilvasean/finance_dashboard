@@ -28,6 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.0.210', '*']
 
+# LOGIN_REDIRECT_URL = 'test'
 
 # Application definition
 
@@ -38,9 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'portfolio.apps.PortfolioConfig',
     'charts.apps.ChartsConfig',
-    'worker.apps.WorkerConfig',
 ]
 
 MIDDLEWARE = [

@@ -1,1 +1,0 @@
-static_assets = "./static/static_assets"
