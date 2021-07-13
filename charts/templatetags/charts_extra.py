@@ -16,3 +16,7 @@ def to_float(value):
 @register.filter()
 def get_value(value, arg):
     return value.get(arg, None)
+
+@register.filter()
+def mult_to_100(value):
+    return value *100

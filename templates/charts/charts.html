@@ -114,15 +114,15 @@
           {% else %}
           <td class="text-danger">{{ stk.rel_10_20 }}</td>
           {% endif %}
-          {% if stk.dividend_yield_per|to_int > 5 %}
-          <td class="text-success">{{stk.dividend_yield_per |floatformat:2}}</td>
+          {% if stk.dividend_yield_per|to_int|mult_to_100 > 5 %}
+          <td class="text-success">{{stk.dividend_yield_per |mult_to_100 |floatformat:2}}</td>
           {% else %}
-          <td class="text-danger">{{stk.dividend_yield_per |floatformat:2}}</td>
+          <td class="text-danger">{{stk.dividend_yield_per |mult_to_100 |floatformat:2}}</td>
           {% endif %}
           {% if stk.beta|to_float > 1 %}
-          <td class="text-success">{{ stk.beta | floatformat:2 }}</td>
+          <td class="text-success">{{ stk.beta}}</td>
           {% else %}
-          <td class="text-danger">{{ stk.beta | floatformat:2 }}</td>
+          <td class="text-danger">{{ stk.beta}}</td>
           {% endif %}
           <td>{{ stk.book_value | floatformat:2  }}</td>
           {% if stk.price_bk_ratio|to_float > 0.3 %}

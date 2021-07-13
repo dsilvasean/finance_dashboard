@@ -83,7 +83,10 @@ class Stocks(models.Model):
         self.per_vol_traded = (self.volume / self.shares_outstanding_Cr)*100
         self.trailingEps_rel_price_per = (self.trailingeps/ self.current_price)*100
         self.forwardEps_rel_price_per = (self.forwardeps /  self.current_price)*100
-        self.price_bk_ratio = (self.current_price / self.book_value)
+        try:
+            self.price_bk_ratio = (self.current_price / self.book_value)
+        except ZeroDivisionError:
+            self.price_bk_ratio = 0
         super(Stocks, self).save(*args, **kwargs)  #calls the real save method
 
     def __str__(self):

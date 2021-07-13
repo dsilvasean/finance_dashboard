@@ -6,11 +6,16 @@ from django.utils import timezone
 from yahooquery import Ticker
 from bs4 import BeautifulSoup
 import concurrent.futures
+from pytz import timezone as pytz_timezone
 
-from charts.models import Update_trackers
-from charts.models import Stocks, Portfolio
+if __name__ == '__main__':
+    pass
+else:
+    from charts.models import Update_trackers
+    from charts.models import Stocks, Portfolio
 # from worker.const import static_assets
 static_assets = "./static/static_assets"
+utc_timezone = pytz_timezone('UTC')
 data = {}
 emp_dict = {'zip': None, 'sector': None, 'fullTimeEmployees': None, 'longBusinessSummary': None, 'city': None, 'phone': None, 'country': None, 'companyOfficers': None, 'website': None, 'maxAge': None, 'address1': None, 'fax': None, 'industry': None, 'address2': None, 'previousClose': None, 'regularMarketOpen': None, 'twoHundredDayAverage': None, 'trailingAnnualDividendYield': None, 'payoutRatio': None, 'volume24Hr': None, 'regularMarketDayHigh': None, 'navPrice': None, 'averageDailyVolume10Day': None, 'totalAssets': None, 'regularMarketPreviousClose': None, 'fiftyDayAverage': None, 'trailingAnnualDividendRate': None, 'open': None, 'averageVolume10days': None, 'expireDate': None, 'yield': None, 'algorithm': None, 'dividendRate': None, 'exDividendDate': None, 'beta': None, 'circulatingSupply': None, 'startDate': None, 'regularMarketDayLow': None, 'priceHint': None, 'currency': None, 'trailingPE': None, 'regularMarketVolume': None, 'lastMarket': None, 'maxSupply': None, 'openInterest': None, 'marketCap': None, 'volumeAllCurrencies': None, 'strikePrice': None, 'averageVolume': None, 'priceToSalesTrailing12Months': None, 'dayLow': None, 'ask': None, 'ytdReturn': None, 'askSize': None, 'volume': None, 'fiftyTwoWeekHigh': None, 'forwardPE': None, 'fromCurrency': None, 'fiveYearAvgDividendYield': None, 'fiftyTwoWeekLow': None, 'bid': None, 'tradeable': None, 'dividendYield': None, 'bidSize': None, 'dayHigh': None, 'exchange': None, 'shortName': None, 'longName': None, 'exchangeTimezoneName': None, 'exchangeTimezoneShortName': None, 'isEsgPopulated': None, 'gmtOffSetMilliseconds': None, 'underlyingSymbol': None, 'quoteType': None, 'symbol': None, 'underlyingExchangeSymbol': None, 'headSymbol': None, 'messageBoardId': None, 'uuid': None, 'market': None, 'annualHoldingsTurnover': None, 'enterpriseToRevenue': None, 'beta3Year': None, 'profitMargins': None, 'enterpriseToEbitda': None, '52WeekChange': None, 'morningStarRiskRating': None, 'forwardEps': None, 'revenueQuarterlyGrowth': None, 'sharesOutstanding': None, 'fundInceptionDate': None, 'annualReportExpenseRatio': None, 'bookValue': None, 'sharesShort': None, 'sharesPercentSharesOut': None, 'fundFamily': None, 'lastFiscalYearEnd': None, 'heldPercentInstitutions': None, 'netIncomeToCommon': None, 'trailingEps': None, 'lastDividendValue': None, 'SandP52WeekChange': None, 'priceToBook': None, 'heldPercentInsiders': None, 'nextFiscalYearEnd': None, 'mostRecentQuarter': None, 'shortRatio': None, 'sharesShortPreviousMonthDate': None, 'floatShares': None, 'enterpriseValue': None, 'threeYearAverageReturn': None, 'lastSplitDate': None, 'lastSplitFactor': None, 'legalType': None, 'morningStarOverallRating': None, 'earningsQuarterlyGrowth': None, 'dateShortInterest': None, 'pegRatio': None, 'lastCapGain': None, 'shortPercentOfFloat': None, 'sharesShortPriorMonth': None, 'category': None, 'fiveYearAverageReturn': None, 'regularMarketPrice': None, 'logo_url': None}
 proxies = {
@@ -51,9 +56,9 @@ def lookup_(dict_, field_):
     try:
         data_ = dict_[field_]
         if data_ == None or data_ == 'null':
-            data_ = 1
+            data_ = 0
     except KeyError:
-        data_ = 1
+        data_ = 0
     return data_
 
 def update_stocks(data):
@@ -79,11 +84,12 @@ class Stock():
             data = data_[self.ticker]
             # print(data)
         except KeyError:
+            print(ticker)
             print('exception......')
             data = emp_dict
         self.sector = lookup_(data,'sector')
         self.dividendYield = lookup_(data, 'dividendYield')
-        self.beta = lookup_(data,'dividendYield')
+        self.beta = lookup_(data,'beta')
         self.bookValue = lookup_(data,'bookValue')
         self.forwardEps = lookup_(data,'forwardEps')
         self.trailingEps = lookup_(data,'trailingEps')
@@ -94,6 +100,7 @@ class Stock():
         self.marketCap = lookup_(data, 'marketCap')
         self.wk52hi = lookup_(data,'wk52hi')
         self.wk52lo = lookup_(data,'wk52lo')
+        # print(data)
     def current_price(self):
         try:
             with open(f'{static_assets}/max_1d/{self.ticker}.csv', 'r+') as csvfile:
@@ -307,7 +314,7 @@ class workers_():
                     'sector':lookup(key, 'assetProfile', 'sector'),
                     'dividendYield':lookup(key, 'summaryDetail', 'dividendYield'),
                     'beta':lookup(key, 'defaultKeyStatistics', 'beta'),
-                    'bookValue':lookup(key,'defaultKeyStatistics','bookValue'),
+                    'bookValue':lookup(key,'defaultKeyStatistics','bookValue'), 
                     'forwardEps': lookup(key, 'defaultKeyStatistics', 'forwardEps'),
                     'trailingEps':lookup(key,'defaultKeyStatistics', 'trailingEps'),
                     'sharesOutstanding':lookup(key, 'defaultKeyStatistics', 'sharesOutstanding'),
@@ -327,7 +334,10 @@ class workers_():
             print('updated...')
 
     def dwnld_charts(self):
-        if datetime.datetime.now().day == Update_trackers.objects.get(file_or_dir_name="charts/").updated_at.day:
+        utc_timezone = pytz_timezone('UTC')
+        utc_time = datetime.datetime.now(utc_timezone)
+        print(f"{utc_time},--{Update_trackers.objects.get(file_or_dir_name='charts/').updated_at.day}")
+        if utc_time.day == Update_trackers.objects.get(file_or_dir_name="charts/").updated_at.day:
             print('updated_today')
             return 'last updated: today'
         else:
@@ -363,7 +373,9 @@ class workers_():
             )
             return 'Downloaded all'
     def update_rows(self, d):
-        if datetime.datetime.now().day == Update_trackers.objects.get(file_or_dir_name="db_update").updated_at.day:
+        utc_timezone = pytz_timezone('UTC')
+        utc_time = datetime.datetime.now(utc_timezone)
+        if utc_time.day == Update_trackers.objects.get(file_or_dir_name="db_update").updated_at.day:
             return 'database was already updated today'
         else:
             Update_trackers.objects.update_or_create(
@@ -372,6 +384,8 @@ class workers_():
             )
             for i in range(0, len(self.tickers_list)):
                 stk = Stock(self.tickers_list[i], 'ISIN001')
+                if self.tickers_list[i] == "ICICIBANK.NS":
+                    print(stk)
                 curr_price = stk.current_price()
                 volume = stk.volume()
                 vol_10_avg = stk.vol_avg(10)
@@ -424,14 +438,14 @@ class workers_():
                 stk.__dict__['rel_52_per'] = rel_52_p
                 stk.__dict__['p_upon_e'] = pe_ratio
                 # stk.__dict__.pop('stk')
-                print(stk.__dict__)
+                # print(stk.__dict__)
 
                 print(self.tickers_list[i])
                 print(stk.sector)
                 print(stk.mvg(100))
                 print(f'Volume:{volume}')
                 print(f'curr_price:{curr_price}')
-                print(stk.__dict__)
+                # print(stk.__dict__)
                 if d =='update':
                     update_stocks(stk.__dict__)
                     self.rows_updated = self.rows_updated + 1
@@ -449,3 +463,5 @@ class workers_():
 # inst = workers_()
 # inst.yquery()
 # inst.update_max_data()
+# stk = Stock('ICICIBANK.NS', 'ADDFG')
+# inst =  workers_()

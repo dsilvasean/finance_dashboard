@@ -127,6 +127,7 @@ def rmFromIndex(request):
 
 @login_required
 def updateHistoricalData(request):
+    _reso_ = None
     global worker_instance
     try:
         worker_instance = fetch_data.workers_()
