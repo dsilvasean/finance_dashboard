@@ -240,7 +240,7 @@ class workers_():
         print(len(days_to_fetch))
         if len(days_to_fetch) == 0:
             print(f'{last_updated_on}assdfrgrgrtgktk')
-            self.max_update_now = last_updated_on
+            self.max_update_now = last_updated_on.strftime('%d, %m, %y')
         if len(days_to_fetch) == 0:
             self.max_update_running = False
             return 'already up to date'
