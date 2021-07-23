@@ -225,6 +225,17 @@ class workers_():
         return data_to_return
     # Updating max_1d using bhavcopy....  its a mess but works 
     def update_max_data(self):
+        hdr = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36',
+       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*,q=0.8,application/signed-exchange;v=b3;q=0.9',
+       'Accept-Encoding': 'gzip, deflate, br',
+       'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+       'Accept-Encoding': 'gzip, deflate, br',
+       'Accept-Language': 'en-IN,en;q=0.9,en-GB;q=0.8,en-US;q=0.7,hi;q=0.6',
+       'Connection': 'keep-alive','Host':'www1.nseindia.com',
+       'Cache-Control':'max-age=0',
+       'Host':'www1.nseindia.com',
+       'Referer':'https://www1.nseindia.com/products/content/derivatives/equities/fo.htm',
+       }
         self.max_update_running = True
         with open(f"{static_assets}/max_1d/RELIANCE.NS.csv", 'r') as f:
             data_ = csv.reader(f)
@@ -263,7 +274,7 @@ class workers_():
             url =  f"https://archives.nseindia.com/content/historical/EQUITIES/{year_}/{month_}/cm{day_}{month_}{year_}bhav.csv.zip"
             print(f"updating for {day_} using {url}")
             # print(time_now.hour)
-            data = requests.get(url).content
+            data = requests.get(url, headers=hdr).content
             with open(f"{static_assets}/bhavcopy/temp/{file_name}.csv.zip", 'wb') as f:
                 f.write(data)
             with zipfile.ZipFile(f'{static_assets}/bhavcopy/temp/{file_name}.csv.zip', "r") as zip:
