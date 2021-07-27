@@ -289,6 +289,8 @@ class workers_():
                     for col in cols_to_get:
                         try:
                             dat_ = df.loc[df['SYMBOL'] == ticker.replace('.NS', '')][col].iloc[0]
+                            if col == 'TIMESTAMP':
+                                dat_ = dat_[0:3] + dat_[3].upper() + dat_[4:6].lower() + dat_[6:]
                         except IndexError:
                             dat_ = 0
                         if col == "TOTTRDQTY":
