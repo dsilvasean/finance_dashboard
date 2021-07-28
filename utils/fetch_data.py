@@ -225,6 +225,8 @@ class workers_():
         return data_to_return
     # Updating max_1d using bhavcopy....  its a mess but works 
     def update_max_data(self):
+        delivery_lines_ = ''
+        delivery_headerss = "Record Type,Sr No,Name of Security, Series, Quantity Traded,Deliverable Quantity(gross across client level),% of Deliverable Quantity to Traded Quantity"
         hdr = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36',
        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*,q=0.8,application/signed-exchange;v=b3;q=0.9',
        'Accept-Encoding': 'gzip, deflate, br',
@@ -266,38 +268,64 @@ class workers_():
         print(f'sasasadsdfggjghjfg{len(days_to_fetch)}')
         for date in days_to_fetch:
             month_ = date.strftime("%b").upper()
+            _month_ = date.strftime("%m")
             day_ = date.strftime("%d")
             year_ = date.year
             self.max_update_now = f"{day_}/{month_}/{year_}"
             file_name = f"bhavcopy{day_}{month_}{year_}"
             # print(day_)
             url =  f"https://archives.nseindia.com/content/historical/EQUITIES/{year_}/{month_}/cm{day_}{month_}{year_}bhav.csv.zip"
-            print(f"updating for {day_} using {url}")
+            url_delivery = f"https://archives.nseindia.com/archives/equities/mto/MTO_{day_}{_month_}{year_}.DAT"
+            print(f"updating for {day_} using {url} and delivery {url_delivery}")
             # print(time_now.hour)
             data = requests.get(url, headers=hdr).content
+            data_delivery = requests.get(url_delivery, headers=hdr).content.decode('UTF-8').split('\n')[4:-1]
+            for index, lines in enumerate(data_delivery):
+                if index == 1:
+                    delivery_lines_ = delivery_headerss + '\n'
+                delivery_lines_ = delivery_lines_ + lines + '\n'
             with open(f"{static_assets}/bhavcopy/temp/{file_name}.csv.zip", 'wb') as f:
                 f.write(data)
+            with open(f"{static_assets}/bhavcopy/{file_name}_delivery.csv", 'w') as f:
+                f.write(delivery_lines_)
             with zipfile.ZipFile(f'{static_assets}/bhavcopy/temp/{file_name}.csv.zip', "r") as zip:
                 zip.extractall(f"{static_assets}/bhavcopy")
                 os.remove(f'{static_assets}/bhavcopy/temp/{file_name}.csv.zip')
             for ticker in self.tickers_list:
                 print(f"now appending to {ticker}")
-                cols_to_get = ['TIMESTAMP','OPEN', 'HIGH', 'LOW', 'CLOSE', 'PREVCLOSE', 'TOTTRDQTY']
+                # cols_to_get = ['TIMESTAMP','OPEN', 'HIGH', 'LOW', 'CLOSE', 'PREVCLOSE', 'TOTTRDQTY']
+                cols_to_get = ['TIMESTAMP','OPEN', 'HIGH', 'LOW', 'CLOSE', 'PREVCLOSE', 'TOTTRDQTY', 'TOTTRDQTY', 'TOTTRDVAL',' Quantity Traded', 'Deliverable Quantity(gross across client level)', '% of Deliverable Quantity to Traded Quantity']
+                # cols_to_get_delivery = " Quantity Traded, Deliverable Quantity(gross across client level), % of Deliverable Quantity to Traded Quantity"
+                # cols_to_get_delivery = [col for col in cols_to_get_delivery.split(',')]
+                # cols_to_get.extend(cols_to_get_delivery)
+                print(cols_to_get)
                 to_append = f""
                 with open(f"{static_assets}/bhavcopy/cm{day_}{month_}{year_}bhav.csv", 'r') as bhavcopy:
                     df = pd.read_csv(bhavcopy)
+                    df_delivery = pd.read_csv(f'{static_assets}/bhavcopy/{file_name}_delivery.csv')
                     for col in cols_to_get:
                         try:
                             dat_ = df.loc[df['SYMBOL'] == ticker.replace('.NS', '')][col].iloc[0]
                             if col == 'TIMESTAMP':
                                 dat_ = dat_[0:3] + dat_[3].upper() + dat_[4:6].lower() + dat_[6:]
-                        except IndexError:
+                        except (IndexError, KeyError) as e:
+                            try:
+                                dat_ = df_delivery.loc[df_delivery['Name of Security'] == ticker.replace('.NS', '')][col].iloc[0]
+                                print(f'dat_............ {dat_}')
+                                print(dat_)
+                                to_append = to_append + str(dat_)
+                            except Exception as e:
+                                print(f'errorororghgfhfjgkfgdf  {e}')
+                                dat_ = 0
+                                to_append = to_append + str(dat_)
                             dat_ = 0
-                        if col == "TOTTRDQTY":
+                            to_append = to_append + str(dat_)
+                        if col == cols_to_get[-1]:
                             to_append = to_append + str(dat_) + "\n"
                         else:
                             to_append = to_append + str(dat_) + ','
-                # print(to_append)
+                            # print(to_append)
+                print(to_append)
                 with open(f'{static_assets}/max_1d/{ticker}.csv', 'a') as f:
                     f.write(to_append)
                 self.done__ = self.done__ + (len(days_to_fetch) * 1)
