@@ -36,6 +36,7 @@
           <th>volume</th>
           <th>vol_avg_10</th>
           <th>vol_avg_10%</th>
+          <th>deliveryAvg10%</th>
           <!-- <th>mvg_100</th> -->
           <!-- <th>mvg_50</th> -->
           <!-- <th>mvg_20</th> -->
@@ -94,6 +95,7 @@
           {% else %}
           <td class="text-danger">{{stk.per_vol_traded_10_day}}</td>
           {% endif %}
+          <td class="text-primary">{{stk.delivery_avg_10}}</td>
           {% if stk.rel_100_200|to_int > 0 %}
           <td class="text-success">{{ stk.rel_100_200 }}</td>
           {% else %}

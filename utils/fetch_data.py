@@ -1,9 +1,9 @@
 # Main packages....
-import requests, os, time, datetime, shutil, zipfile, pytz , pickle, json, base64, csv, sys
+import requests, os, time, datetime, shutil, zipfile, pytz , pickle, json, base64, csv, sys, numpy
 import yfinance as yf
 import pandas as pd
 from django.utils import timezone
-from yahooquery import Ticker
+from yahooquery import Ticker, ticker
 from bs4 import BeautifulSoup
 import concurrent.futures
 from pytz import timezone as pytz_timezone
@@ -65,7 +65,7 @@ def update_stocks(data):
     data = data
     inst = Stocks.objects.update_or_create(
         ticker= data['ticker'],
-        defaults={ 'sec_code':data['isin_code'],'sector': data['sector'] , 'shares_outstanding_Cr' : data['sharesOutstanding'], 'per_vol_traded_10_day': data['per_vol_traded_10_day'] , 'dividend_yield_per':data['dividendYield'] , 'wk52hi':data['wk52hi'] , 'wk52lo':data['wk52lo'] , 'regularopen':data['regularMarketOpen'] , 'previousclose': data['previousClose'] , 'trailingeps': data['trailingEps'] , 'forwardeps':data['forwardEps'] , 'mvg_200_clo':data['mvg_200_clo'] , 'mvg_100_clo': data['mvg_100_clo'] ,'mvg_50_clo': data['mvg_50_clo'] , 'mvg_20_clo':  data['mvg_20_clo'], 'mvg_10_clo': data['mvg_10_clo'] , 'mvg_5_clo':data['mvg_5_clo'] , 'volume':data['Volume'] , 'vol_avg_10':data['vol_avg_10'] , 'current_price': data['current_price'], 'last_updated': '2021-05-22', 'rel_100_200':data['rel_100_200'] , 'rel_50_100': data['rel_50_100'], 'rel_20_50': data['rel_20_50'], 'rel_10_20': data['rel_10_20'], 'rel_52_per': data['rel_52_per'], 'p_upon_e':data['p_upon_e'] , 'market_cap':data['marketCap'] , 'book_value': data['bookValue'] , 'beta': data['beta'] ,'trailingEps_rel_price_per': data['trailingEps_rel_price_per'], 'forwardEps_rel_price_per': data['forwardEps_rel_price_per']})
+        defaults={ 'sec_code':data['isin_code'],'sector': data['sector'] , 'shares_outstanding_Cr' : data['sharesOutstanding'], 'per_vol_traded_10_day': data['per_vol_traded_10_day'] ,'delivery_avg_10':data['delivery_avg_10'], 'dividend_yield_per':data['dividendYield'] , 'wk52hi':data['wk52hi'] , 'wk52lo':data['wk52lo'] , 'regularopen':data['regularMarketOpen'] , 'previousclose': data['previousClose'] , 'trailingeps': data['trailingEps'] , 'forwardeps':data['forwardEps'] , 'mvg_200_clo':data['mvg_200_clo'] , 'mvg_100_clo': data['mvg_100_clo'] ,'mvg_50_clo': data['mvg_50_clo'] , 'mvg_20_clo':  data['mvg_20_clo'], 'mvg_10_clo': data['mvg_10_clo'] , 'mvg_5_clo':data['mvg_5_clo'] , 'volume':data['Volume'] , 'vol_avg_10':data['vol_avg_10'] , 'current_price': data['current_price'], 'last_updated': '2021-05-22', 'rel_100_200':data['rel_100_200'] , 'rel_50_100': data['rel_50_100'], 'rel_20_50': data['rel_20_50'], 'rel_10_20': data['rel_10_20'], 'rel_52_per': data['rel_52_per'], 'p_upon_e':data['p_upon_e'] , 'market_cap':data['marketCap'] , 'book_value': data['bookValue'] , 'beta': data['beta'] ,'trailingEps_rel_price_per': data['trailingEps_rel_price_per'], 'forwardEps_rel_price_per': data['forwardEps_rel_price_per']})
     if Portfolio.objects.all().filter(ticker=data['ticker']).exists():
         p_inst = Portfolio.objects.get(ticker=data['ticker'])
         p_inst.current_price = data['current_price']
@@ -122,19 +122,28 @@ class Stock():
             return 1
     def vol_avg(self, period_):
         lst = []
+        print(self.ticker)
         try:
-            with open(f'{static_assets}/max_1d/{self.ticker}.csv') as f:
-                data_ = csv.reader(f)
-                data_ = list(data_)
-                for i in range(1,period_+1):
-                    if data_[-i][-1] =='':
-                        lst = [0]
-                    else:
-                        # print(self.ticker)
-                        lst.append(int(float(data_[-i][-1])))
-            return sum(lst)/int(len(lst))
-        except:
-            return 1
+            df = pd.read_csv(f'{static_assets}/max_1d/{self.ticker}.csv')
+            avg_ = numpy.average(df['Volume'].tail(period_).values)
+            return avg_
+        except Exception as e:
+            print(e)
+            return 0
+
+        # try:
+        #     with open(f'{static_assets}/max_1d/{self.ticker}.csv') as f:
+        #         data_ = csv.reader(f)
+        #         data_ = list(data_)
+        #         for i in range(1,period_+1):
+        #             if data_[-i][-1] =='':
+        #                 lst = [0]
+        #             else:
+        #                 # print(self.ticker)
+        #                 lst.append(int(float(data_[-i][-1])))
+        #     return sum(lst)/int(len(lst))
+        # except:
+            # return 1
     def mvg(self,range_):
         # print(f"**************{self.ticker}")
         lst = []
@@ -149,6 +158,17 @@ class Stock():
                 # lst.append(0)
                 return 0
         return sum(lst)/len(lst)
+    
+    def delivery_avg(self, range):
+        lst = []
+        df = pd.read_csv(f'{static_assets}/max_1d/{self.ticker}.csv')
+        try:
+            avg_ = numpy.average(df['% Dly Qt to Traded Qty'].tail(range).values)
+            return avg_
+        except Exception as e:
+            print(e)
+            return 0
+
 
 
 class workers_():
@@ -430,6 +450,7 @@ class workers_():
                 curr_price = stk.current_price()
                 volume = stk.volume()
                 vol_10_avg = stk.vol_avg(10)
+                print(f'helloxncbdjfhdu  {vol_10_avg}')
                 # 
                 mvg_200 = round(stk.mvg(200))
                 mvg_100 = round(stk.mvg(100))
@@ -437,6 +458,11 @@ class workers_():
                 mvg_20 = round(stk.mvg(20))
                 mvg_10 = round(stk.mvg(10))
                 mvg_5 = round(stk.mvg(5))
+                # 
+                try:
+                    delivery_avg_10 = round(stk.delivery_avg(10))
+                except:
+                    delivery_avg_10 = 0
                 # 
                 # p_b_ratio = curr_price / stk.bookValue
                 per_trail_eps_pri = round((stk.trailingEps/stk.regularMarketPrice)*100,2)
@@ -457,6 +483,7 @@ class workers_():
                 stk.__dict__['mvg_20_clo'] = str(mvg_20)
                 stk.__dict__['mvg_10_clo'] = str(mvg_10) 
                 stk.__dict__['mvg_5_clo'] = str(mvg_5)
+                stk.__dict__['delivery_avg_10'] = str(delivery_avg_10)
                 stk.__dict__['Volume'] = volume
                 stk.__dict__['vol_avg_10'] = vol_10_avg
                 stk.__dict__['current_price'] = curr_price

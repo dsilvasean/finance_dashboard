@@ -64,6 +64,7 @@ class Stocks(models.Model):
     rel_20_50 = models.FloatField(blank=True, null=True)
     rel_10_20 = models.FloatField(blank=True, null=True)
     rel_52_per = models.FloatField(blank=True, null=True)
+    delivery_avg_10 = models.FloatField(blank=True, null=True)
     p_upon_e = models.FloatField(blank=True, null=True)
     market_cap = models.IntegerField(blank=True, null= True)
     book_value = models.FloatField(blank=True, null=True)
