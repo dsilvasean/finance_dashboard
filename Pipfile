@@ -42,6 +42,8 @@ xlrd = "*"
 openpyxl = "*"
 tqdm = "*"
 yahooquery = "*"
+gunicorn = "*"
+django-heroku = "*"
 
 [dev-packages]
 
