@@ -7,6 +7,7 @@ from django.urls import include
 
 urlpatterns = [
     path('', views.index, name='charts'),
+    path('market-holidays', views.market_holidays, name='market_holidays'),
     # path('accounts/', include('django.contrib.auth.urls')),
     # path('loginForm', views.loginForm),
     path('loginForm', views.loginForm, name='loginForm'),

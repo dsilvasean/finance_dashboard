@@ -81,9 +81,14 @@ class Stocks(models.Model):
             #     'current_price': self.current_price,
             #     'ticker':self.ticker
             # })         
-        self.per_vol_traded = (self.volume / self.shares_outstanding_Cr)*100
-        self.trailingEps_rel_price_per = (self.trailingeps/ self.current_price)*100
-        self.forwardEps_rel_price_per = (self.forwardeps /  self.current_price)*100
+        try:
+            self.per_vol_traded = (self.volume / self.shares_outstanding_Cr)*100
+            self.trailingEps_rel_price_per = (self.trailingeps/ self.current_price)*100
+            self.forwardEps_rel_price_per = (self.forwardeps /  self.current_price)*100
+        except ZeroDivisionError:
+            self.per_vol_traded = 0
+            self.trailingEps_rel_price_per = 0
+            self.forwardEps_rel_price_per = 0
         try:
             self.price_bk_ratio = (self.current_price / self.book_value)
         except ZeroDivisionError:

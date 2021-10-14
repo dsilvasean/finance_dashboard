@@ -23,6 +23,11 @@ proxies = {
   'http': 'socks5://127.0.0.1:9050',
   'https': 'socks5://127.0.0.1:9050'}
 
+def holidays():
+    with open(f"{static_assets}/holidays_2021.csv", 'r+') as f:
+        list_ = f.read().replace('\t', '').split('\n')[1:-1]
+        return list_
+
 def dwnldMcapTickers():
     url = "https://static.nseindia.com//s3fs-public/inline-files/MCAP31032021_0.xlsx"
     headers = {
@@ -269,7 +274,7 @@ class workers_():
             last_updated_on = datetime.datetime.strptime(last_updated_on,"%Y-%m-%d")
         # last_updated_on = Update_trackers.objects.get(file_or_dir_name='max_1d/')
         # last_updated_on = getattr(last_updated_on, 'updated_at')
-        print(last_updated_on)
+        print(last_updated_on) 
         # last_updated_on = last_updated_on.replace(tzinfo=None)
         # print(self.time_now.hour)
         if int(convert_to_localtime(timezone.now())[11:13]) >= 18:     
@@ -287,30 +292,39 @@ class workers_():
         self.total_no_ = len(days_to_fetch) * len(self.tickers_list)
         print(f'sasasadsdfggjghjfg{len(days_to_fetch)}')
         for date in days_to_fetch:
-            month_ = date.strftime("%b").upper()
-            _month_ = date.strftime("%m")
-            day_ = date.strftime("%d")
-            year_ = date.year
-            self.max_update_now = f"{day_}/{month_}/{year_}"
-            file_name = f"bhavcopy{day_}{month_}{year_}"
-            # print(day_)
-            url =  f"https://archives.nseindia.com/content/historical/EQUITIES/{year_}/{month_}/cm{day_}{month_}{year_}bhav.csv.zip"
-            url_delivery = f"https://archives.nseindia.com/archives/equities/mto/MTO_{day_}{_month_}{year_}.DAT"
-            print(f"updating for {day_} using {url} and delivery {url_delivery}")
-            # print(time_now.hour)
-            data = requests.get(url, headers=hdr).content
-            data_delivery = requests.get(url_delivery, headers=hdr).content.decode('UTF-8').split('\n')[4:-1]
-            for index, lines in enumerate(data_delivery):
-                if index == 1:
-                    delivery_lines_ = delivery_headerss + '\n'
-                delivery_lines_ = delivery_lines_ + lines + '\n'
-            with open(f"{static_assets}/bhavcopy/temp/{file_name}.csv.zip", 'wb') as f:
-                f.write(data)
-            with open(f"{static_assets}/bhavcopy/{file_name}_delivery.csv", 'w') as f:
-                f.write(delivery_lines_)
-            with zipfile.ZipFile(f'{static_assets}/bhavcopy/temp/{file_name}.csv.zip', "r") as zip:
-                zip.extractall(f"{static_assets}/bhavcopy")
-                os.remove(f'{static_assets}/bhavcopy/temp/{file_name}.csv.zip')
+            date_new = date.to_pydatetime()
+            print(date_new.strftime("%d-%b-%Y"))
+            print(holidays())
+            if date_new.strftime("%d-%b-%Y") in holidays():
+                print('*'*100)
+                print('hello in holidays.....................')
+            else:
+                print(type(date_new))
+                print(date)
+                month_ = date.strftime("%b").upper()
+                _month_ = date.strftime("%m")
+                day_ = date.strftime("%d")
+                year_ = date.year
+                self.max_update_now = f"{day_}/{month_}/{year_}"
+                file_name = f"bhavcopy{day_}{month_}{year_}"
+                # print(day_)
+                url =  f"https://archives.nseindia.com/content/historical/EQUITIES/{year_}/{month_}/cm{day_}{month_}{year_}bhav.csv.zip"
+                url_delivery = f"https://archives.nseindia.com/archives/equities/mto/MTO_{day_}{_month_}{year_}.DAT"
+                print(f"updating for {day_} using {url} and delivery {url_delivery}")
+                # print(time_now.hour)
+                data = requests.get(url, headers=hdr).content
+                data_delivery = requests.get(url_delivery, headers=hdr).content.decode('UTF-8').split('\n')[4:-1]
+                for index, lines in enumerate(data_delivery):
+                    if index == 1:
+                        delivery_lines_ = delivery_headerss + '\n'
+                    delivery_lines_ = delivery_lines_ + lines + '\n'
+                with open(f"{static_assets}/bhavcopy/temp/{file_name}.csv.zip", 'wb') as f:
+                    f.write(data)
+                with open(f"{static_assets}/bhavcopy/{file_name}_delivery.csv", 'w') as f:
+                    f.write(delivery_lines_)
+                with zipfile.ZipFile(f'{static_assets}/bhavcopy/temp/{file_name}.csv.zip', "r") as zip:
+                    zip.extractall(f"{static_assets}/bhavcopy")
+                    os.remove(f'{static_assets}/bhavcopy/temp/{file_name}.csv.zip')
             for ticker in self.tickers_list:
                 print(f"now appending to {ticker}")
                 # cols_to_get = ['TIMESTAMP','OPEN', 'HIGH', 'LOW', 'CLOSE', 'PREVCLOSE', 'TOTTRDQTY']
@@ -318,37 +332,44 @@ class workers_():
                 # cols_to_get_delivery = " Quantity Traded, Deliverable Quantity(gross across client level), % of Deliverable Quantity to Traded Quantity"
                 # cols_to_get_delivery = [col for col in cols_to_get_delivery.split(',')]
                 # cols_to_get.extend(cols_to_get_delivery)
-                print(cols_to_get)
+                # print(cols_to_get)
                 to_append = f""
-                with open(f"{static_assets}/bhavcopy/cm{day_}{month_}{year_}bhav.csv", 'r') as bhavcopy:
-                    df = pd.read_csv(bhavcopy)
-                    df_delivery = pd.read_csv(f'{static_assets}/bhavcopy/{file_name}_delivery.csv')
-                    for col in cols_to_get:
-                        try:
-                            dat_ = df.loc[df['SYMBOL'] == ticker.replace('.NS', '')][col].iloc[0]
-                            if col == 'TIMESTAMP':
-                                dat_ = dat_[0:3] + dat_[3].upper() + dat_[4:6].lower() + dat_[6:]
-                        except (IndexError, KeyError) as e:
+                if date_new.strftime("%d-%b-%Y") in holidays():
+                    print('*'*100)
+                    print('hello in holidays.....................')
+                    with open(f'{static_assets}/max_1d/{ticker}.csv', 'a') as f:
+                        f.write(f"{str(date_new.strftime('%d-%b-%Y'))},0,0,0,0,0,0,0,0,0,0,0\n")
+                        self.done__ = self.done__ + (len(days_to_fetch) * 1)
+                else:
+                    with open(f"{static_assets}/bhavcopy/cm{day_}{month_}{year_}bhav.csv", 'r') as bhavcopy:
+                        df = pd.read_csv(bhavcopy)
+                        df_delivery = pd.read_csv(f'{static_assets}/bhavcopy/{file_name}_delivery.csv')
+                        for col in cols_to_get:
                             try:
-                                dat_ = df_delivery.loc[df_delivery['Name of Security'] == ticker.replace('.NS', '')][col].iloc[0]
-                                print(f'dat_............ {dat_}')
-                                print(dat_)
-                                to_append = to_append + str(dat_)
-                            except Exception as e:
-                                print(f'errorororghgfhfjgkfgdf  {e}')
+                                dat_ = df.loc[df['SYMBOL'] == ticker.replace('.NS', '')][col].iloc[0]
+                                if col == 'TIMESTAMP':
+                                    dat_ = dat_[0:3] + dat_[3].upper() + dat_[4:6].lower() + dat_[6:]
+                            except (IndexError, KeyError) as e:
+                                try:
+                                    dat_ = df_delivery.loc[df_delivery['Name of Security'] == ticker.replace('.NS', '')][col].iloc[0]
+                                    # print(f'dat_............ {dat_}')
+                                    # print(dat_)
+                                    to_append = to_append + str(dat_)
+                                except Exception as e:
+                                    # print(f'errorororghgfhfjgkfgdf  {e}')
+                                    dat_ = 0
+                                    to_append = to_append + str(dat_)
                                 dat_ = 0
                                 to_append = to_append + str(dat_)
-                            dat_ = 0
-                            to_append = to_append + str(dat_)
-                        if col == cols_to_get[-1]:
-                            to_append = to_append + str(dat_) + "\n"
-                        else:
-                            to_append = to_append + str(dat_) + ','
-                            # print(to_append)
-                print(to_append)
-                with open(f'{static_assets}/max_1d/{ticker}.csv', 'a') as f:
-                    f.write(to_append)
-                self.done__ = self.done__ + (len(days_to_fetch) * 1)
+                            if col == cols_to_get[-1]:
+                                to_append = to_append + str(dat_) + "\n"
+                            else:
+                                to_append = to_append + str(dat_) + ','
+                                # print(to_append)
+                    # print(to_append)
+                    with open(f'{static_assets}/max_1d/{ticker}.csv', 'a') as f:
+                        f.write(to_append)
+                    self.done__ = self.done__ + (len(days_to_fetch) * 1)
         Update_trackers.objects.update_or_create(
             file_or_dir_name=f"max_1d/",
             defaults={"updating": False, "updated_at": timezone.now()}
@@ -465,9 +486,14 @@ class workers_():
                     delivery_avg_10 = 0
                 # 
                 # p_b_ratio = curr_price / stk.bookValue
-                per_trail_eps_pri = round((stk.trailingEps/stk.regularMarketPrice)*100,2)
-                per_for_eps_pri = round((stk.forwardEps/stk.regularMarketPrice)*100,2)
-                per_vol_traded_10_day = round((vol_10_avg/ stk.sharesOutstanding)*100, 2)
+                try:
+                    per_trail_eps_pri = round((stk.trailingEps/stk.regularMarketPrice)*100,2)
+                    per_for_eps_pri = round((stk.forwardEps/stk.regularMarketPrice)*100,2)
+                    per_vol_traded_10_day = round((vol_10_avg/ stk.sharesOutstanding)*100, 2)
+                except ZeroDivisionError:
+                    per_trail_eps_pri = 0
+                    per_for_eps_pri = 0
+                    per_vol_traded_10_day = 0
                 # 
                 try:
                     rel_52_p = (curr_price -  stk.wk52lo) / (stk.wk52hi - stk.wk52lo) * 100

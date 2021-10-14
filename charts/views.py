@@ -19,7 +19,8 @@ from charts.forms import addToPortfolio
 # from charts.models import Portfolio
 
 from charts.models import Update_trackers
-from utils import fetch_data 
+from utils import fetch_data
+from utils.fetch_data import holidays
 
 worker_instance = None
 
@@ -50,6 +51,10 @@ def logout_(request):
 
 def loginForm(request):
     return render(request, "registration/login.html") 
+
+# @login_required
+def market_holidays(request):
+    return HttpResponse('Hello from holidays')
 
 @login_required(login_url='login_')
 def index(request):
