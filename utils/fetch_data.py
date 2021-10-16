@@ -338,8 +338,9 @@ class workers_():
                     print('*'*100)
                     print('hello in holidays.....................')
                     with open(f'{static_assets}/max_1d/{ticker}.csv', 'a') as f:
-                        f.write(f"{str(date_new.strftime('%d-%b-%Y'))},0,0,0,0,0,0,0,0,0,0,0\n")
+                        # f.write(f"{str(date_new.strftime('%d-%b-%Y'))},0,0,0,0,0,0,0,0,0,0,0\n")
                         self.done__ = self.done__ + (len(days_to_fetch) * 1)
+                        pass
                 else:
                     with open(f"{static_assets}/bhavcopy/cm{day_}{month_}{year_}bhav.csv", 'r') as bhavcopy:
                         df = pd.read_csv(bhavcopy)
