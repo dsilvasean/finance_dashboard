@@ -1,4 +1,7 @@
-from numpy import average
-import pandas as pd
-df = pd.read_csv(f'./static/static_assets/max_1d/RELIANCE.NS.csv')
-print(average(df['% Dly Qt to Traded Qty'].tail(10).values))
+import yfinance as yf
+import requests
+session = requests.Session()
+session.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+stk = yf.Ticker('RELIANCE.NS TCS.NS', session=session)
+df = stk.get_calendar()
+print(df)

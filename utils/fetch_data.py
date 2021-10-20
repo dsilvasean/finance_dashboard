@@ -1,3 +1,4 @@
+# Author Sean Dsilva
 # Main packages....
 import requests, os, time, datetime, shutil, zipfile, pytz , pickle, json, base64, csv, sys, numpy
 import yfinance as yf
@@ -78,6 +79,7 @@ def update_stocks(data):
         print('updatd Portfolio')
     else:
         print('Not present in portfolio...')
+# MAIN ---------------
 class Stock():
     def __init__(self, ticker, isin_code):
         self.ticker = ticker
@@ -106,6 +108,7 @@ class Stock():
         self.wk52hi = lookup_(data,'wk52hi')
         self.wk52lo = lookup_(data,'wk52lo')
         # print(data)
+
     def current_price(self):
         try:
             with open(f'{static_assets}/max_1d/{self.ticker}.csv', 'r+') as csvfile:
@@ -117,6 +120,7 @@ class Stock():
                     return float(data[-1][4])
         except:
             return 1
+
     def volume(self):
         try:
             with open(f'{static_assets}/max_1d/{self.ticker}.csv', 'r+') as csvfile:
@@ -125,6 +129,7 @@ class Stock():
                 return float(data[-1][6])
         except:
             return 1
+
     def vol_avg(self, period_):
         lst = []
         print(self.ticker)
@@ -136,19 +141,6 @@ class Stock():
             print(e)
             return 0
 
-        # try:
-        #     with open(f'{static_assets}/max_1d/{self.ticker}.csv') as f:
-        #         data_ = csv.reader(f)
-        #         data_ = list(data_)
-        #         for i in range(1,period_+1):
-        #             if data_[-i][-1] =='':
-        #                 lst = [0]
-        #             else:
-        #                 # print(self.ticker)
-        #                 lst.append(int(float(data_[-i][-1])))
-        #     return sum(lst)/int(len(lst))
-        # except:
-            # return 1
     def mvg(self,range_):
         # print(f"**************{self.ticker}")
         lst = []
@@ -173,8 +165,6 @@ class Stock():
         except Exception as e:
             print(e)
             return 0
-
-
 
 class workers_():
     def __init__(self):
@@ -455,6 +445,7 @@ class workers_():
                 defaults={"updating": False}
             )
             return 'Downloaded all'
+
     def update_rows(self, d):
         utc_timezone = pytz_timezone('UTC')
         utc_time = datetime.datetime.now(utc_timezone)
@@ -555,8 +546,47 @@ class workers_():
             )
             return 'Updated rows.....'
         # /////
+
+class Financial_records():
+    def __init__(self, no_of_tickers):
+        self.tickers = []
+        self.no_of_tickers = no_of_tickers
+        xl = pd.read_excel(f"{static_assets}/MCAP31032021_0.xlsx", header=None)
+        for i in range(100,self.no_of_tickers):
+            self.tickers.append(f"{xl[1][i]}.NS")
+        self.session = requests.Session()
+        self.session.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+
+    def financials(self):
+        for ticker in self.tickers:
+            print(ticker)
+            stk = yf.Ticker(ticker, session=self.session)
+            df = stk.get_financials()
+            df.to_csv(f"{static_assets}/financial_records/financials/{ticker}_financials.csv")
+    
+    def balance_sheet(self):
+        for ticker in self.tickers:
+            print(ticker)
+            stk = yf.Ticker(ticker, session=self.session)
+            df = stk.get_balance_sheet()
+            df.to_csv(f"{static_assets}/financial_records/balance_sheet/{ticker}_balance.csv")
+    
+    def cash_flow(self):
+        for ticker in self.tickers:
+            print(ticker)
+            stk = yf.Ticker(ticker, session=self.session)
+            df = stk.get_cashflow()
+            df.to_csv(f"{static_assets}/financial_records/cash_flow/{ticker}_cash.csv")
+
+
+        
 # inst = workers_()
 # inst.yquery()
 # inst.update_max_data()
 # stk = Stock('ICICIBANK.NS', 'ADDFG')
 # inst =  workers_()
+
+# inst = Financial_records(200)
+# inst.financials()
+# inst.balance_sheet()
+# inst.cash_flow()
